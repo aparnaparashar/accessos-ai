@@ -56,22 +56,32 @@ interface Phase { name: string; items: string[]; }
 export class RoadmapComponent {
   phases: Phase[] = [
     {
-      name: 'Phase 4 — API Platform, SDKs, Billing',
+      name: 'Shipped — End-User App, Developer Platform, Production Polish',
       items: [
-        'Real API Key Service (generation, scopes, rotation, revocation, IP restriction)',
-        'Request signing (timestamp + signature + nonce) to prevent replay attacks',
-        'Stripe-backed billing and invoicing',
-        'Client SDKs',
-        'Object storage (MinIO) so TTS/audio responses get real CDN URLs instead of inline data URIs',
+        'AI Companion (image/text input, emergency flag) wired to the real /v1/accessibility/assist endpoint',
+        'Accessibility Settings, persisted locally and actually changing Orchestrator behavior',
+        'Developer Portal: real applications CRUD, key generate/rotate/revoke with one-time secret reveal',
+        'Real analytics (Mongo aggregation), billing/usage estimates, fail-closed Stripe checkout, paginated audit log',
+        'CORS fixed (preflight + Access-Control-Allow-Origin on every /api/* response)',
+        'Toast notifications, per-route SEO (title/meta/Open Graph), real 404 page, favicon/robots.txt/sitemap.xml',
       ],
     },
     {
-      name: 'Phase 5 — Analytics, Monitoring, Deployment',
+      name: 'Phase 4 — API Platform hardening',
       items: [
-        'Real usage analytics (latency, success rate, top APIs, revenue) replacing sample dashboard data',
-        'Centralized logging & audit trail service',
-        'Kubernetes manifests for production deployment',
-        'CI/CD pipeline',
+        'Wire the existing HMAC-signature + nonce-replay helpers (lib/keys.ts, lib/redis.ts) into an actual signed-request route',
+        'Per-key IP allowlists and scopes enforced at request time (schema fields exist; not yet checked on every call)',
+        'Client SDKs documenting the request pattern',
+        'Object storage (MinIO) so TTS/audio responses get real CDN URLs instead of always-null audio_url',
+      ],
+    },
+    {
+      name: 'Phase 5 — Testing, Monitoring, Deployment',
+      items: [
+        'Backend integration tests (signup/login/refresh, assist with/without a provider, API-key auth, rate limits, Developer Platform CRUD + ownership checks)',
+        'Frontend unit tests for auth/dev/settings services and the Companion/Settings components',
+        'Docker Compose (mongo, redis, backend, frontend) and a Dockerfile per service',
+        'CI/CD pipeline running lint, build, and the tests above',
       ],
     },
     {

@@ -1,20 +1,38 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  AnalyticsResponse,
+  ApiKeyMeta,
+  Application,
+  AuditEntry,
+  BillingUsageResponse,
+  DevService,
+  GeneratedKey,
+  PlanName,
+} from '../../core/dev.service';
+import { ToastService } from '../../core/toast.service';
 
-interface ApiRow { name: string; desc: string; }
+interface ApiRow {
+  name: string;
+  desc: string;
+}
+
+const ALL_ALLOWED_APIS = ['ocr', 'accessibility.assist'] as const;
 
 @Component({
   selector: 'app-developer-portal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <section class="section page-head">
       <div class="container">
         <span class="eyebrow">04–05 · Developer Portal &amp; API Catalogue</span>
         <h1>Accessibility-as-a-service, one API</h1>
-        <p class="lede">Angular 20 standalone-component app at <code>apps/developer-portal</code>.
-          Manage applications, generate keys, monitor usage, and pay by consumption — modeled on
-          Stripe / Twilio-style developer platforms.</p>
+        <p class="lede">
+          Manage applications, generate keys, monitor usage, and see estimated billing — every panel
+          below is wired to a real backend endpoint, not sample data.
+        </p>
       </div>
     </section>
 
@@ -25,17 +43,242 @@ interface ApiRow { name: string; desc: string; }
           <p>Same JWT login flow as the End-User App, scoped to the developer role.</p>
         </div>
         <div class="feature-row">
-          <div class="feature-row-head"><h3>Dashboard UI</h3><span class="status-chip built">BUILT</span></div>
-          <p>Overview layout with metric cards and a recent-activity table for /v1/accessibility/assist
-            calls. Currently rendered with representative sample data — wiring to the real Analytics
-            Service is a Phase 5 item.</p>
+          <div class="feature-row-head"><h3>Applications &amp; API Keys</h3><span class="status-chip live">LIVE</span></div>
+          <p>Real create/list/rotate/revoke against MongoDB — the plaintext secret is shown exactly once, at generation or rotation.</p>
         </div>
         <div class="feature-row">
-          <div class="feature-row-head"><h3>API Keys UI</h3><span class="status-chip built">BUILT</span></div>
-          <p>Table of sandbox/production keys with rotate/revoke actions. The underlying API Key
-            Service (real generation, scopes, IP restrictions, expiration, webhook secrets) is a
-            Phase 4 item — today this screen demonstrates the intended UX against sample keys.</p>
+          <div class="feature-row-head"><h3>Analytics &amp; Billing</h3><span class="status-chip live">LIVE</span></div>
+          <p>Aggregated from real UsageLog rows written by every /v1/accessibility/assist and /v1/ocr call. Billing figures are labeled as estimates, matching the backend's own disclaimer.</p>
         </div>
+        <div class="feature-row">
+          <div class="feature-row-head"><h3>Audit Log</h3><span class="status-chip live">LIVE</span></div>
+          <p>Paginated history of every application/key mutation you've performed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Applications -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Applications</span><h2>Your applications</h2></div>
+
+        @if (loadingApps()) {
+          <p class="muted">Loading applications…</p>
+        } @else if (!applications().length) {
+          <p class="muted">You haven't created an application yet — create one below to get an API key.</p>
+        } @else {
+          <div class="app-list">
+            @for (app of applications(); track app._id) {
+              <button
+                type="button"
+                class="app-row"
+                [class.selected]="selectedApp()?._id === app._id"
+                (click)="selectApp(app)"
+              >
+                <div class="app-row-main">
+                  <strong>{{ app.name }}</strong>
+                  <span class="status-chip built">{{ app.plan.toUpperCase() }}</span>
+                </div>
+                <span class="app-row-apis">{{ app.allowed_apis.join(', ') }}</span>
+              </button>
+            }
+          </div>
+        }
+
+        <form class="card create-app-form" (ngSubmit)="createApplication()">
+          <h3>Create application</h3>
+          <div class="field">
+            <label for="app-name">Name</label>
+            <input id="app-name" name="appName" type="text" [(ngModel)]="newAppName" placeholder="e.g. Hospital ERP" required />
+          </div>
+          <div class="field">
+            <label for="app-plan">Plan</label>
+            <select id="app-plan" name="appPlan" [(ngModel)]="newAppPlan">
+              <option value="free">Free</option>
+              <option value="starter">Starter</option>
+              <option value="pro">Pro</option>
+            </select>
+          </div>
+          <fieldset class="field">
+            <legend>Allowed APIs</legend>
+            @for (api of allowedApiChoices; track api) {
+              <label class="checkbox-row">
+                <input type="checkbox" [checked]="newAppApis.includes(api)" (change)="toggleNewAppApi(api)" />
+                {{ api }}
+              </label>
+            }
+          </fieldset>
+          <button type="submit" class="btn btn-primary" [disabled]="creatingApp()">
+            {{ creatingApp() ? 'Creating…' : 'Create application' }}
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Keys -->
+    @if (selectedApp()) {
+      <section class="section keys-section">
+        <div class="container">
+          <div class="section-head">
+            <span class="eyebrow">API Keys</span>
+            <h2>Keys for {{ selectedApp()!.name }}</h2>
+          </div>
+
+          @if (generatedKey()) {
+            <div class="card generated-key-panel" role="alert">
+              <h4>Copy this secret now — it will not be shown again</h4>
+              <div class="key-row mono"><span>Client ID</span><code>{{ generatedKey()!.client_id }}</code></div>
+              <div class="key-row mono"><span>Secret key</span><code>{{ generatedKey()!.secret_key }}</code></div>
+              <button type="button" class="btn btn-ghost" (click)="dismissGeneratedKey()">I've copied it, dismiss</button>
+            </div>
+          }
+
+          @if (loadingKeys()) {
+            <p class="muted">Loading keys…</p>
+          } @else if (!keys().length) {
+            <p class="muted">No keys yet for this application.</p>
+          } @else {
+            <table>
+              <thead><tr><th>Client ID</th><th>Status</th><th>Last used</th><th>Actions</th></tr></thead>
+              <tbody>
+                @for (k of keys(); track k._id) {
+                  <tr>
+                    <td class="mono">{{ k.client_id }}</td>
+                    <td><span class="status-chip" [class]="k.revoked ? 'planned' : 'live'">{{ k.revoked ? 'REVOKED' : 'ACTIVE' }}</span></td>
+                    <td>{{ k.last_used_at ? (k.last_used_at | date:'short') : 'Never' }}</td>
+                    <td class="key-actions">
+                      @if (!k.revoked) {
+                        <button type="button" class="btn btn-ghost small" (click)="rotateKey(k)">Rotate</button>
+                        @if (confirmingRevoke() === k._id) {
+                          <button type="button" class="btn btn-primary small danger" (click)="revokeKey(k)">Confirm revoke</button>
+                          <button type="button" class="btn btn-ghost small" (click)="confirmingRevoke.set(null)">Cancel</button>
+                        } @else {
+                          <button type="button" class="btn btn-ghost small" (click)="confirmingRevoke.set(k._id)">Revoke</button>
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          <button type="button" class="btn btn-primary" (click)="generateKey()" [disabled]="generatingKey()">
+            {{ generatingKey() ? 'Generating…' : 'Generate new key' }}
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- Analytics -->
+    <section class="section analytics-section">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Analytics</span><h2>Usage across all applications</h2></div>
+
+        @if (loadingAnalytics()) {
+          <p class="muted">Loading analytics…</p>
+        } @else if (analytics()) {
+          <div class="analytics-cards">
+            <div class="card metric-card"><span class="metric-label">Total calls</span><span class="metric-value">{{ analytics()!.total_calls }}</span></div>
+            <div class="card metric-card"><span class="metric-label">Avg latency</span><span class="metric-value">{{ analytics()!.average_latency_ms }}ms</span></div>
+            <div class="card metric-card">
+              <span class="metric-label">Success rate</span>
+              <span class="metric-value">{{ analytics()!.success_rate !== null ? (analytics()!.success_rate! * 100).toFixed(1) + '%' : '—' }}</span>
+            </div>
+          </div>
+
+          @if (analytics()!.calls_by_api.length) {
+            <div class="card svg-bars-card">
+              <h4>Calls by API</h4>
+              <svg [attr.viewBox]="'0 0 400 ' + (analytics()!.calls_by_api.length * 40 + 10)" class="bars-svg" role="img" aria-label="Bar chart of calls by API">
+                @for (row of analytics()!.calls_by_api; track row.api; let i = $index) {
+                  <text [attr.x]="0" [attr.y]="i * 40 + 14" class="bar-label">{{ row.api }}</text>
+                  <rect [attr.x]="0" [attr.y]="i * 40 + 20" [attr.width]="barWidth(row.calls)" height="14" class="bar-rect"></rect>
+                  <text [attr.x]="barWidth(row.calls) + 6" [attr.y]="i * 40 + 31" class="bar-value">{{ row.calls }}</text>
+                }
+              </svg>
+            </div>
+          }
+
+          @if (!analytics()!.total_calls) {
+            <p class="muted">No usage yet — calls to /v1/accessibility/assist or /v1/ocr will show up here.</p>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- Billing -->
+    <section class="section billing-section">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Billing</span><h2>Usage-based estimate</h2></div>
+
+        @if (loadingBilling()) {
+          <p class="muted">Loading billing…</p>
+        } @else if (billing()) {
+          <div class="card billing-card">
+            <p class="billing-total">Estimated total this period: <strong>\${{ billing()!.estimated_total_usd }}</strong></p>
+            @if (billing()!.line_items.length) {
+              <table>
+                <thead><tr><th>API</th><th>Calls</th><th>Est. charge</th><th>Note</th></tr></thead>
+                <tbody>
+                  @for (item of billing()!.line_items; track item.api) {
+                    <tr>
+                      <td>{{ item.api }}</td>
+                      <td>{{ item.calls }}</td>
+                      <td>\${{ item.estimated_charge_usd }}</td>
+                      <td class="note-cell">{{ item.note }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="muted">No billable usage this period yet.</p>
+            }
+            <p class="disclaimer">{{ billing()!.disclaimer }}</p>
+          </div>
+
+          @if (checkoutError()) {
+            <div class="response-error" role="alert">
+              <strong>Billing not configured</strong>
+              <p>{{ checkoutError() }}</p>
+            </div>
+          }
+
+          <button type="button" class="btn btn-primary" (click)="setUpBilling()" [disabled]="checkingOut()">
+            {{ checkingOut() ? 'Contacting Stripe…' : 'Set up billing' }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- Audit log -->
+    <section class="section audit-section">
+      <div class="container">
+        <div class="section-head"><span class="eyebrow">Audit Log</span><h2>Recent activity</h2></div>
+
+        @if (loadingAudit()) {
+          <p class="muted">Loading audit log…</p>
+        } @else if (audit() && audit()!.entries.length) {
+          <table>
+            <thead><tr><th>When</th><th>Action</th><th>Detail</th></tr></thead>
+            <tbody>
+              @for (e of audit()!.entries; track e._id) {
+                <tr>
+                  <td>{{ e.createdAt | date:'short' }}</td>
+                  <td>{{ e.action }}</td>
+                  <td><pre class="audit-detail">{{ e.detail | json }}</pre></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="pagination">
+            <button type="button" class="btn btn-ghost small" [disabled]="auditPage() <= 1" (click)="changeAuditPage(auditPage() - 1)">Previous</button>
+            <span>Page {{ auditPage() }} of {{ audit()!.total_pages }}</span>
+            <button type="button" class="btn btn-ghost small" [disabled]="auditPage() >= audit()!.total_pages" (click)="changeAuditPage(auditPage() + 1)">Next</button>
+          </div>
+        } @else {
+          <p class="muted">No audit entries yet.</p>
+        }
       </div>
     </section>
 
@@ -66,25 +309,6 @@ interface ApiRow { name: string; desc: string; }
         </div>
       </div>
     </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="section-head">
-          <span class="eyebrow">10 · API Key System</span>
-          <h2>Example application</h2>
-          <p>Every developer creates an application, chooses a plan, and picks which APIs it's allowed to call.</p>
-        </div>
-        <div class="key-card card">
-          <div class="key-row"><span>Application Name</span><strong>Hospital ERP</strong></div>
-          <div class="key-row"><span>Plan</span><strong>Enterprise</strong></div>
-          <div class="key-row"><span>Allowed APIs</span><strong>OCR · Accessibility Scanner · Screen Reader · Speech API</strong></div>
-          <div class="key-row mono"><span>Public API Key</span><code>acc_pk_live_xxx...</code></div>
-          <div class="key-row mono"><span>Secret API Key</span><code>acc_sk_live_xxx...</code></div>
-          <p class="key-note">Note: this is the target design for the API Key System. The
-            production-grade version is a Phase 4 item — see Roadmap.</p>
-        </div>
-      </div>
-    </section>
   `,
   styles: [`
     .lede { max-width: 640px; }
@@ -92,35 +316,291 @@ interface ApiRow { name: string; desc: string; }
     .feature-row-head { display: flex; align-items: center; gap: 12px; }
     .feature-row-head h3 { margin: 0; font-size: 16.5px; }
     .feature-row p { margin: 8px 0 0; max-width: 720px; }
+    .muted { color: var(--ink-soft); font-size: 14px; }
     table { margin-top: 8px; }
     .chip-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .app-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .app-row {
+      text-align: left; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg-panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+    }
+    .app-row.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .app-row-main { display: flex; align-items: center; gap: 10px; }
+    .app-row-apis { font-size: 12.5px; color: var(--ink-soft); }
+
+    .create-app-form { max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    fieldset.field { border: none; padding: 0; margin: 0; }
+    legend { font-size: 13.5px; font-weight: 600; padding: 0; margin-bottom: 4px; }
+    label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    input[type="text"], select {
+      padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+      font-size: 14.5px; font-family: var(--font-body); background: #fff; color: var(--ink);
+    }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-bottom: 6px; }
+    .checkbox-row input { width: 16px; height: 16px; }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+    .keys-section { background: var(--bg-panel); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .generated-key-panel { border-color: var(--accent); margin-bottom: 20px; }
+    .generated-key-panel h4 { margin-top: 0; font-size: 14.5px; }
+    .key-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; align-items: center; }
+    .key-row span { color: var(--ink-soft); flex-shrink: 0; }
+    .key-row code { word-break: break-all; text-align: right; }
+    .key-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn.small { padding: 6px 12px; font-size: 12.5px; }
+    .btn.danger { background: #C2410D; box-shadow: none; }
+
+    .metric-card { display: flex; flex-direction: column; gap: 6px; }
+    .analytics-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    .metric-label { font-size: 12.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric-value { font-family: var(--font-display); font-size: 26px; color: var(--ink); }
+    .svg-bars-card h4 { margin-top: 0; font-size: 14px; }
+    .bars-svg { width: 100%; height: auto; }
+    .bar-label { font-size: 11px; fill: var(--ink-soft); font-family: var(--font-mono); }
+    .bar-rect { fill: var(--accent); }
+    .bar-value { font-size: 11px; fill: var(--ink); }
+
+    .billing-card { max-width: 720px; }
+    .billing-total { font-size: 15px; }
+    .note-cell { font-size: 12.5px; color: var(--ink-soft); }
+    .disclaimer { font-size: 12px; color: var(--ink-soft); margin-top: 14px; margin-bottom: 0; }
+    .response-error {
+      background: rgba(194,65,13,0.08); border: 1px solid rgba(194,65,13,0.25);
+      padding: 14px 16px; border-radius: 10px; color: #7A2A15; margin: 16px 0; max-width: 720px;
+    }
+    .response-error p { color: inherit; margin: 6px 0 0; font-size: 13.8px; }
+
+    .audit-detail { font-size: 11.5px; margin: 0; white-space: pre-wrap; word-break: break-word; }
+    .pagination { display: flex; align-items: center; gap: 14px; margin-top: 14px; font-size: 13.5px; }
+
     .key-card { max-width: 520px; }
-    .key-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
-    .key-row span { color: var(--ink-soft); }
-    .key-row.mono code { font-size: 12.5px; }
-    .key-note { margin-top: 16px; font-size: 13px; color: var(--ink-soft); }
   `],
 })
-export class DeveloperPortalComponent {
+export class DeveloperPortalComponent implements OnInit {
+  allowedApiChoices = ALL_ALLOWED_APIS;
+
+  applications = signal<Application[]>([]);
+  loadingApps = signal(true);
+  creatingApp = signal(false);
+  newAppName = '';
+  newAppPlan: PlanName = 'free';
+  newAppApis: string[] = ['ocr', 'accessibility.assist'];
+
+  selectedApp = signal<Application | null>(null);
+  keys = signal<ApiKeyMeta[]>([]);
+  loadingKeys = signal(false);
+  generatingKey = signal(false);
+  generatedKey = signal<GeneratedKey | null>(null);
+  confirmingRevoke = signal<string | null>(null);
+
+  analytics = signal<AnalyticsResponse | null>(null);
+  loadingAnalytics = signal(true);
+
+  billing = signal<BillingUsageResponse | null>(null);
+  loadingBilling = signal(true);
+  checkingOut = signal(false);
+  checkoutError = signal<string | null>(null);
+
+  audit = signal<{ entries: AuditEntry[]; page: number; total_pages: number } | null>(null);
+  loadingAudit = signal(true);
+  auditPage = signal(1);
+
   shippedApis: ApiRow[] = [
-    { name: 'Accessibility Analysis API', desc: 'Upload a website, mobile app, or dashboard. Returns accessibility score, WCAG violations, AI recommendations, and auto-fixes.' },
-    { name: 'Image Description API', desc: 'Input an image, output a detailed contextual description.' },
-    { name: 'Smart OCR API', desc: 'Image → structured JSON → translated text → summarized version.' },
-    { name: 'Sign Language API', desc: 'Video → speech → text → translation.' },
-    { name: 'Speech API', desc: 'Speech → text → emotion → language detection → speaker identification.' },
-    { name: 'Adaptive Content API', desc: 'Input a medical report; output a child version, easy-language version, Braille format, audio, or sign language.' },
-    { name: 'AI Screen Reader API', desc: 'Give any UI, get back natural narration.' },
-    { name: 'Accessibility Chatbot API', desc: 'Drop into any application — automatically becomes an accessibility assistant.' },
-    { name: 'Accessibility Testing API', desc: 'Runs accessibility tests on every CI/CD deployment.' },
-    { name: 'Accessibility Analytics API', desc: 'Shows most-inaccessible screens, heatmaps, user struggles, and drop-off points.' },
-    { name: 'Indoor Navigation API', desc: 'Hospitals, airports, and universities can integrate indoor guidance.' },
-    { name: 'Accessibility Recommendation API', desc: 'Given a user profile and app context, returns the best accessibility settings.' },
+    { name: 'Accessibility Assist API', desc: 'Single endpoint fusing OCR, scene understanding, text simplification, sign-gloss, and TTS hints based on user context.' },
+    { name: 'Smart OCR API', desc: 'Image → text via genuinely local Tesseract OCR.' },
   ];
 
   futureApis = [
-    'Accessibility Copilot API', 'Braille API', 'Gesture API', 'Emotion Recognition API',
-    'Reading Assistant API', 'Document Simplifier API', 'AI Form Filling API',
-    'Accessibility Translation API', 'Smart Subtitle API', 'AR Navigation API',
-    'Accessibility Compliance API', 'Accessibility QA API',
+    'Accessibility Analysis API', 'Sign Language Video API', 'Speech API', 'Adaptive Content API',
+    'AI Screen Reader API', 'Accessibility Chatbot API', 'Accessibility Testing API',
+    'Indoor Navigation API', 'Accessibility Recommendation API', 'Braille API', 'Gesture API',
+    'Emotion Recognition API',
   ];
+
+  constructor(private dev: DevService, private toast: ToastService) {}
+
+  ngOnInit(): void {
+    this.loadApplications();
+    this.loadAnalytics();
+    this.loadBilling();
+    this.loadAudit(1);
+  }
+
+  loadApplications() {
+    this.loadingApps.set(true);
+    this.dev.listApplications().subscribe({
+      next: (res) => {
+        this.applications.set(res.applications);
+        this.loadingApps.set(false);
+        if (res.applications.length && !this.selectedApp()) {
+          this.selectApp(res.applications[0]);
+        }
+      },
+      error: () => {
+        this.loadingApps.set(false);
+        this.toast.error('Could not load applications.');
+      },
+    });
+  }
+
+  createApplication() {
+    if (!this.newAppName.trim()) {
+      this.toast.error('Application name is required.');
+      return;
+    }
+    this.creatingApp.set(true);
+    this.dev.createApplication({ name: this.newAppName.trim(), plan: this.newAppPlan, allowed_apis: this.newAppApis }).subscribe({
+      next: (res) => {
+        this.creatingApp.set(false);
+        this.newAppName = '';
+        this.applications.update((list) => [res.application, ...list]);
+        this.selectApp(res.application);
+        this.toast.success('Application created.');
+      },
+      error: (err) => {
+        this.creatingApp.set(false);
+        this.toast.error(err?.error?.detail || 'Could not create application.');
+      },
+    });
+  }
+
+  toggleNewAppApi(api: string) {
+    const set = new Set(this.newAppApis);
+    if (set.has(api)) set.delete(api);
+    else set.add(api);
+    this.newAppApis = Array.from(set);
+  }
+
+  selectApp(app: Application) {
+    this.selectedApp.set(app);
+    this.generatedKey.set(null);
+    this.confirmingRevoke.set(null);
+    this.loadKeys(app._id);
+  }
+
+  loadKeys(appId: string) {
+    this.loadingKeys.set(true);
+    this.dev.listKeys(appId).subscribe({
+      next: (res) => {
+        this.keys.set(res.keys);
+        this.loadingKeys.set(false);
+      },
+      error: () => {
+        this.loadingKeys.set(false);
+        this.toast.error('Could not load keys.');
+      },
+    });
+  }
+
+  generateKey() {
+    const app = this.selectedApp();
+    if (!app) return;
+    this.generatingKey.set(true);
+    this.dev.generateKey(app._id).subscribe({
+      next: (res) => {
+        this.generatingKey.set(false);
+        this.generatedKey.set(res);
+        this.loadKeys(app._id);
+        this.toast.success('Key generated — copy the secret now.');
+      },
+      error: (err) => {
+        this.generatingKey.set(false);
+        this.toast.error(err?.error?.detail || 'Could not generate key.');
+      },
+    });
+  }
+
+  rotateKey(key: ApiKeyMeta) {
+    const app = this.selectedApp();
+    if (!app) return;
+    this.dev.rotateKey(app._id, key._id).subscribe({
+      next: (res) => {
+        this.generatedKey.set(res);
+        this.loadKeys(app._id);
+        this.toast.success('Key rotated — copy the new secret now.');
+      },
+      error: (err) => this.toast.error(err?.error?.detail || 'Could not rotate key.'),
+    });
+  }
+
+  revokeKey(key: ApiKeyMeta) {
+    const app = this.selectedApp();
+    if (!app) return;
+    this.dev.revokeKey(app._id, key._id).subscribe({
+      next: () => {
+        this.confirmingRevoke.set(null);
+        this.loadKeys(app._id);
+        this.toast.success('Key revoked.');
+      },
+      error: (err) => this.toast.error(err?.error?.detail || 'Could not revoke key.'),
+    });
+  }
+
+  dismissGeneratedKey() {
+    this.generatedKey.set(null);
+  }
+
+  loadAnalytics() {
+    this.loadingAnalytics.set(true);
+    this.dev.getAnalytics().subscribe({
+      next: (res) => {
+        this.analytics.set(res);
+        this.loadingAnalytics.set(false);
+      },
+      error: () => this.loadingAnalytics.set(false),
+    });
+  }
+
+  barWidth(calls: number): number {
+    const max = Math.max(1, ...(this.analytics()?.calls_by_api.map((r) => r.calls) || [1]));
+    return Math.max(4, Math.round((calls / max) * 340));
+  }
+
+  loadBilling() {
+    this.loadingBilling.set(true);
+    this.dev.getBillingUsage().subscribe({
+      next: (res) => {
+        this.billing.set(res);
+        this.loadingBilling.set(false);
+      },
+      error: () => this.loadingBilling.set(false),
+    });
+  }
+
+  setUpBilling() {
+    this.checkingOut.set(true);
+    this.checkoutError.set(null);
+    this.dev.createCheckout('starter').subscribe({
+      next: (res) => {
+        this.checkingOut.set(false);
+        window.location.href = res.checkout_url;
+      },
+      error: (err) => {
+        this.checkingOut.set(false);
+        if (err?.status === 501) {
+          this.checkoutError.set(err?.error?.detail || 'Stripe is not configured on this backend.');
+        } else {
+          this.toast.error(err?.error?.detail || 'Could not start checkout.');
+        }
+      },
+    });
+  }
+
+  loadAudit(page: number) {
+    this.loadingAudit.set(true);
+    this.dev.getAudit(page).subscribe({
+      next: (res) => {
+        this.audit.set(res);
+        this.auditPage.set(res.page);
+        this.loadingAudit.set(false);
+      },
+      error: () => this.loadingAudit.set(false),
+    });
+  }
+
+  changeAuditPage(page: number) {
+    this.loadAudit(page);
+  }
 }

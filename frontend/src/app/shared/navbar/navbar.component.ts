@@ -16,6 +16,10 @@ import { AuthService } from '../../core/auth.service';
         </a>
         <nav class="links">
           <a routerLink="/features" routerLinkActive="active">Features</a>
+          @if (auth.user()) {
+            <a routerLink="/companion" routerLinkActive="active">Companion</a>
+            <a routerLink="/settings" routerLinkActive="active">Settings</a>
+          }
           <a routerLink="/developer-portal" routerLinkActive="active">Developer Portal</a>
           <a routerLink="/architecture" routerLinkActive="active">Architecture</a>
           <a routerLink="/pricing" routerLinkActive="active">Pricing</a>

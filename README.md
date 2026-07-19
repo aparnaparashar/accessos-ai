@@ -50,12 +50,75 @@ frontend auth flow, and no usage/billing/audit surface**. This pass added:
 - `/login` and `/signup` added to `app.routes.ts`; `/developer-portal` is now
   guarded; the navbar shows sign-in/sign-up or the current user + log-out.
 
-## What's still not done — see `NEXT_STEPS_PROMPT.md`
+## What changed in this pass (CORS fix + End-User Portal + Developer Portal wiring)
 
-Companion page, Settings page, wiring the Developer Portal UI to the new
-real endpoints (it still shows sample data), SEO/404/toast polish, and all
-of Docker/CI/tests. `NEXT_STEPS_PROMPT.md` in this repo root is a ready-to-
-paste prompt for the next session with exact file-level instructions.
+**CORS bug fixed** — `backend/middleware.ts` previously only set security
+headers and never answered the browser's OPTIONS preflight or sent
+`Access-Control-Allow-*` headers, so any direct cross-origin call from
+`localhost:4200` to `localhost:8000` was blocked before it reached a route
+handler. It now answers preflight with 204 + the right headers and echoes
+back any origin listed in the new `ALLOWED_ORIGINS` env var (defaults to
+the Angular dev server). Note the dev server's own `proxy.conf.json` already
+avoided this by proxying same-origin during `ng serve` — this fix covers
+every other way of running the frontend (a static build, a different port,
+production).
+
+**Frontend — new**
+- `core/toast.service.ts` + `shared/toast-host` — replaces `alert()`.
+- `core/settings.service.ts` — accessibility preferences (primary
+  disability, reading level, output modalities), persisted to
+  `localStorage`, matching `backend/src/lib/models/User.ts` exactly.
+- `core/dev.service.ts` — wraps every real Developer Platform endpoint.
+- `core/seo.service.ts` — per-route `<title>`/meta description/Open Graph,
+  driven by `data.seo` on each route in `app.routes.ts`.
+- `pages/companion` — the AI Companion: image/text input, drag-and-drop
+  upload, an emergency toggle, calls `/v1/accessibility/assist` with saved
+  preferences, renders the real response (including a clear
+  `capability_not_configured` state — never a fake success).
+- `pages/settings` — the preferences form described above.
+- `pages/not-found` — a real 404 page (the wildcard route now points here
+  instead of silently redirecting).
+- `favicon.svg`, `robots.txt`, `sitemap.xml`, wired into `angular.json`
+  build assets; `index.html` now references the real favicon.
+
+**Frontend — rewired to real data**
+- `developer-portal.component.ts` no longer shows sample data: application
+  create/list, key generate/rotate/revoke (secret shown exactly once),
+  real analytics (inline SVG bar chart from `GET /v1/analytics`), billing
+  usage + a "Set up billing" button that surfaces the real
+  `capability_not_configured` (501) state when Stripe isn't configured,
+  and a paginated audit log. Every status chip on this page now says LIVE
+  because every panel is wired to a real endpoint.
+- `architecture.component.ts` rewritten to describe the actual system: one
+  Angular SPA + one Next.js backend (no gateway, no Kafka, no separate
+  microservices, no Postgres) with a full table of every real route and
+  its status.
+- `roadmap.component.ts` updated to move API keys/billing/analytics/audit/
+  Companion/Settings into a "Shipped" section instead of "Phase 4/5".
+- `app.component.ts` now applies the SEO service on every navigation and
+  hosts the toast component; `navbar` adds Companion/Settings links for
+  signed-in users.
+
+## What's still not done
+
+Per this pass's instructions, **Docker, docker-compose, CI, and automated
+tests were intentionally left out** — everything above runs locally with
+plain `npm install && npm run dev/start` (see below). Also still open:
+wiring the existing HMAC-signature + nonce-replay helpers into an actual
+signed-request route, per-key IP allowlists/scopes enforced at request
+time, and object storage for real TTS audio URLs. See the Roadmap page in
+the app for the full list.
+
+> **Build verification note:** this pass was done in a sandboxed
+> environment with no network access and no `node_modules` installed, so
+> `npm run build` could not be executed here to confirm a clean compile.
+> All new/edited TypeScript files were checked by hand against the existing
+> Angular 20 standalone-component/control-flow (`@if`/`@for`) conventions
+> already used elsewhere in this codebase, and a structural (brace-balance)
+> sanity pass was run on every changed file. Please run
+> `npm install && npm run build` in both `frontend/` and `backend/` after
+> unzipping to confirm, and open an issue-equivalent note back here if
+> anything doesn't compile.
 
 ## Running it locally
 
