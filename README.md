@@ -7,122 +7,96 @@ Redis** API layer.
 ```
 accessos-ai/
 ├── frontend/   Angular 20 standalone-component app (the website)
-└── backend/    Next.js API routes (Auth, Accessibility Orchestrator, Developer Platform)
+├── backend/    Next.js API routes (Auth, Accessibility Orchestrator, Developer Platform)
+├── docker-compose.yml
+└── .github/workflows/ci.yml
 ```
 
 ## What changed in this pass
 
-Starting point was a marketing/documentation site with a working end-user
-auth + accessibility-assist API but **no Developer Platform routes, no
-frontend auth flow, and no usage/billing/audit surface**. This pass added:
+Starting point was a fully-wired End-User App (Companion, Settings) and
+Developer Portal (applications, keys, analytics, billing, audit) backed by
+real backend endpoints. This pass added **automated tests, Docker, and CI** —
+the final three items from `NEXT_STEPS_PROMPT.md`.
 
-**Backend**
-- `lib/plans.ts`, `lib/keys.ts`, `lib/apiKeyAuth.ts`, `lib/vendorPricing.ts`,
-  `lib/validation.ts` (zod schemas for every route body), `lib/ocr.ts`
-  (Tesseract OCR factored out of the orchestrator so it's shared).
-- Models: `Application`, `ApiKey`, `UsageLog`, `AuditLog`.
-- Full Developer Platform CRUD: create/list/update applications, generate/
-  rotate/revoke API keys (secret shown once, bcrypt-hashed at rest, every
-  mutation writes an `AuditLog` row, ownership enforced).
-- `POST /v1/ocr` — reference developer-product API: API-key auth (bearer
-  secret + `X-Client-Id`, optional HMAC-signed replay protection via
-  `X-Timestamp`/`X-Nonce`/`X-Signature`), real local OCR, `UsageLog` write on
-  every call.
-- `GET /v1/analytics` (Mongo aggregation: totals, by-API, avg latency,
-  success rate, calls/day for 30 days), `GET /v1/billing/usage` (illustrative
-  estimated charges from `lib/vendorPricing.ts`), `POST /v1/billing/checkout`
-  (real Stripe Checkout session if `STRIPE_SECRET_KEY` is set, otherwise
-  fails closed with `capability_not_configured` — never fakes success),
-  `GET /v1/audit` (paginated).
-- `/v1/accessibility/assist` now validates its body with zod, writes a
-  `UsageLog` row on every call, and returns `X-RateLimit-*` headers.
-- `/health/live` + `/health/ready` (Mongo + Redis reachability), plus
-  `middleware.ts` adding CSP/X-Frame-Options/etc. to every API response.
+**Frontend — unit tests (Section 4b)**
+- Karma/Jasmine bootstrapped from scratch: `karma.conf.js`,
+  `tsconfig.spec.json`, test architect target in `angular.json`, and
+  `@angular-devkit/build-angular` Karma plugin.
+- `auth.service.spec.ts` — signup/login/refresh/logout, token persistence,
+  role management.
+- `settings.service.spec.ts` — localStorage persistence, defaults, reset,
+  signal reactivity, corrupt-data resilience.
+- `dev.service.spec.ts` — every HTTP method/URL/body shape for the full
+  Developer Platform API surface.
+- `companion.component.spec.ts` — empty state, validation, submission,
+  `capability_not_configured` error display, response rendering, audio null.
+- `settings.component.spec.ts` — form init, save/reset flows, modality
+  toggling, toast notifications.
+- Run with `npm test` (headless Chrome).
 
-**Frontend**
-- `environments/environment.ts` / `.prod.ts` (wired via `angular.json`
-  `fileReplacements`).
-- `core/auth.service.ts`, `core/auth.interceptor.ts` (attaches the bearer
-  token, retries once on 401 via silent refresh), `core/auth.guard.ts`.
-- `pages/auth/login`, `pages/auth/signup` — reactive forms, inline
-  validation, a role toggle (end user vs. developer), loading/disabled
-  states, visible focus states.
-- `/login` and `/signup` added to `app.routes.ts`; `/developer-portal` is now
-  guarded; the navbar shows sign-in/sign-up or the current user + log-out.
+**Backend — integration tests (Section 5)**
+- Vitest + `mongodb-memory-server` — no external MongoDB or Redis needed.
+- `tests/auth.test.ts` — signup (happy + duplicate + validation), login
+  (happy + wrong creds + non-existent), refresh (happy + invalid).
+- `tests/assist.test.ts` — 401 without auth, response structure, rate-limit
+  headers, malformed body 400, rate-limit 429 (Redis mocked).
+- `tests/developer.test.ts` — application CRUD, 401/403 enforcement,
+  ownership isolation, PATCH updates, key generate/list lifecycle.
+- `tests/billing.test.ts` — checkout fail-closed 501 (Stripe unconfigured),
+  auth/role enforcement, plan validation 400, usage endpoint structure.
+- Run with `npm test`.
 
-## What changed in this pass (CORS fix + End-User Portal + Developer Portal wiring)
+**Infra — Docker, compose, CI (Section 6)**
+- `backend/Dockerfile` — multi-stage `node:20-alpine`: deps → build → run.
+- `frontend/Dockerfile` — multi-stage: `node:20-alpine` `ng build` →
+  `nginx:alpine` serving the dist.
+- `frontend/nginx.conf` — SPA history-API fallback, `/v1/*` and `/health`
+  reverse proxy to `backend:8000`, gzip, static asset caching.
+- `docker-compose.yml` — `mongo:7`, `redis:7-alpine`, `backend`, `frontend`.
+  `docker compose up --build` starts the full stack.
+- `.github/workflows/ci.yml` — two parallel jobs (backend + frontend):
+  install → lint → build → test. Triggers on push to `main` and PRs.
 
-**CORS bug fixed** — `backend/middleware.ts` previously only set security
-headers and never answered the browser's OPTIONS preflight or sent
-`Access-Control-Allow-*` headers, so any direct cross-origin call from
-`localhost:4200` to `localhost:8000` was blocked before it reached a route
-handler. It now answers preflight with 204 + the right headers and echoes
-back any origin listed in the new `ALLOWED_ORIGINS` env var (defaults to
-the Angular dev server). Note the dev server's own `proxy.conf.json` already
-avoided this by proxying same-origin during `ng serve` — this fix covers
-every other way of running the frontend (a static build, a different port,
-production).
+## What was already done (prior passes)
 
-**Frontend — new**
-- `core/toast.service.ts` + `shared/toast-host` — replaces `alert()`.
-- `core/settings.service.ts` — accessibility preferences (primary
-  disability, reading level, output modalities), persisted to
-  `localStorage`, matching `backend/src/lib/models/User.ts` exactly.
-- `core/dev.service.ts` — wraps every real Developer Platform endpoint.
-- `core/seo.service.ts` — per-route `<title>`/meta description/Open Graph,
-  driven by `data.seo` on each route in `app.routes.ts`.
-- `pages/companion` — the AI Companion: image/text input, drag-and-drop
-  upload, an emergency toggle, calls `/v1/accessibility/assist` with saved
-  preferences, renders the real response (including a clear
-  `capability_not_configured` state — never a fake success).
-- `pages/settings` — the preferences form described above.
-- `pages/not-found` — a real 404 page (the wildcard route now points here
-  instead of silently redirecting).
-- `favicon.svg`, `robots.txt`, `sitemap.xml`, wired into `angular.json`
-  build assets; `index.html` now references the real favicon.
+**Backend** — all builds clean with `npm run build`:
+- `lib/db.ts`, `lib/redis.ts`, `lib/jwt.ts`, `lib/orchestrator.ts`,
+  `lib/ocr.ts`, `lib/plans.ts`, `lib/keys.ts`, `lib/apiKeyAuth.ts`,
+  `lib/vendorPricing.ts`, `lib/validation.ts` (zod schemas),
+  `lib/requireDeveloper.ts`.
+- Models: `User`, `Application`, `ApiKey`, `UsageLog`, `AuditLog`.
+- Routes: `/v1/auth/{signup,login,refresh}`, `/v1/accessibility/assist`,
+  `/v1/developer/applications` (POST/GET),
+  `/v1/developer/applications/[id]` (GET/PATCH),
+  `/v1/developer/applications/[id]/keys` (POST/GET),
+  `/v1/developer/applications/[id]/keys/[keyId]` (DELETE/rotate),
+  `/v1/ocr`, `/v1/analytics`, `/v1/billing/usage`, `/v1/billing/checkout`,
+  `/v1/audit`, `/health/live`, `/health/ready`.
+- `middleware.ts` — security headers + CORS.
 
-**Frontend — rewired to real data**
-- `developer-portal.component.ts` no longer shows sample data: application
-  create/list, key generate/rotate/revoke (secret shown exactly once),
-  real analytics (inline SVG bar chart from `GET /v1/analytics`), billing
-  usage + a "Set up billing" button that surfaces the real
-  `capability_not_configured` (501) state when Stripe isn't configured,
-  and a paginated audit log. Every status chip on this page now says LIVE
-  because every panel is wired to a real endpoint.
-- `architecture.component.ts` rewritten to describe the actual system: one
-  Angular SPA + one Next.js backend (no gateway, no Kafka, no separate
-  microservices, no Postgres) with a full table of every real route and
-  its status.
-- `roadmap.component.ts` updated to move API keys/billing/analytics/audit/
-  Companion/Settings into a "Shipped" section instead of "Phase 4/5".
-- `app.component.ts` now applies the SEO service on every navigation and
-  hosts the toast component; `navbar` adds Companion/Settings links for
-  signed-in users.
-
-## What's still not done
-
-Per this pass's instructions, **Docker, docker-compose, CI, and automated
-tests were intentionally left out** — everything above runs locally with
-plain `npm install && npm run dev/start` (see below). Also still open:
-wiring the existing HMAC-signature + nonce-replay helpers into an actual
-signed-request route, per-key IP allowlists/scopes enforced at request
-time, and object storage for real TTS audio URLs. See the Roadmap page in
-the app for the full list.
-
-> **Build verification note:** this pass was done in a sandboxed
-> environment with no network access and no `node_modules` installed, so
-> `npm run build` could not be executed here to confirm a clean compile.
-> All new/edited TypeScript files were checked by hand against the existing
-> Angular 20 standalone-component/control-flow (`@if`/`@for`) conventions
-> already used elsewhere in this codebase, and a structural (brace-balance)
-> sanity pass was run on every changed file. Please run
-> `npm install && npm run build` in both `frontend/` and `backend/` after
-> unzipping to confirm, and open an issue-equivalent note back here if
-> anything doesn't compile.
+**Frontend**:
+- `core/auth.service.ts` + interceptor + guard.
+- `core/settings.service.ts`, `core/dev.service.ts`, `core/seo.service.ts`,
+  `core/toast.service.ts`.
+- Pages: `home`, `features`, `companion` (AI Companion), `settings`,
+  `developer-portal` (fully wired), `architecture`, `pricing`, `roadmap`,
+  `auth/login`, `auth/signup`, `not-found` (404).
+- Shared: `navbar`, `footer`, `icon-rail`, `toast-host`.
+- `favicon.svg`, `robots.txt`, `sitemap.xml`, per-route SEO + Open Graph.
 
 ## Running it locally
 
-### 1. Backend (Next.js + MongoDB + Redis)
+### Option A: Docker Compose (recommended)
+
+```bash
+cp backend/.env.example backend/.env   # fill in JWT secrets; AI provider + Stripe keys are optional
+docker compose up --build              # http://localhost (frontend), :8000 (backend), :27017 (mongo), :6379 (redis)
+```
+
+### Option B: Manual
+
+#### 1. Backend (Next.js + MongoDB + Redis)
 
 ```bash
 cd backend
@@ -136,7 +110,7 @@ limiting in dev — it fails open if unreachable, but note the API-key path's
 nonce replay protection also depends on Redis (`consumeNonce`), so run Redis
 locally if you want to exercise signed requests.
 
-### 2. Frontend (Angular)
+#### 2. Frontend (Angular)
 
 ```bash
 cd frontend
@@ -144,12 +118,20 @@ npm install
 npm start                  # http://localhost:4200, proxies /v1/* and /health to :8000
 ```
 
-> **Note on this session's sandbox:** `ng build` (production) failed here
-> only because the sandbox has no network access to `fonts.googleapis.com`
-> for Angular's build-time font inlining — not a code defect. `ng build
-> --configuration development` was used to confirm the app compiles and
-> bundles cleanly. A normal CI runner or local machine with internet access
-> will hit `npm run build` without this issue.
+> **Note:** `ng build` (production) requires internet access to
+> `fonts.googleapis.com` for Angular's build-time font inlining. Use
+> `ng build --configuration development` to verify compilation in an
+> offline environment.
+
+## Running tests
+
+```bash
+# Backend integration tests (self-contained, no external DB needed)
+cd backend && npm test
+
+# Frontend unit tests (requires Chrome/Chromium)
+cd frontend && npm test
+```
 
 ## Tech stack
 
@@ -164,8 +146,14 @@ npm start                  # http://localhost:4200, proxies /v1/* and /health to
 | OCR | Tesseract.js (genuinely local, no vendor key) |
 | Vision / Text | Provider-abstracted — `AI_PROVIDER_VISION` / `AI_PROVIDER_TEXT` = `openai`/`gemini`/`claude` |
 | Billing | Stripe Checkout, fails closed with `capability_not_configured` if unset |
+| Frontend tests | Karma + Jasmine (headless Chrome) |
+| Backend tests | Vitest + mongodb-memory-server |
+| CI | GitHub Actions (build + lint + test on push/PR) |
+| Containerization | Docker multi-stage + docker-compose |
 
-Intentionally out of scope (per the source spec's own roadmap): a separately
-deployed Postgres-backed Auth service, Kafka/RabbitMQ, Kubernetes,
-Prometheus/Grafana/OpenTelemetry, MinIO-backed TTS audio, a trained
-sign-language model, and real BLE/WiFi/AR indoor navigation.
+## Intentionally out of scope
+
+Per the source spec's own roadmap: a separately deployed Postgres-backed Auth
+service, Kafka/RabbitMQ, Kubernetes, Prometheus/Grafana/OpenTelemetry,
+MinIO-backed TTS audio, a trained sign-language model, and real BLE/WiFi/AR
+indoor navigation.

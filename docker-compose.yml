@@ -1,0 +1,58 @@
+# AccessOS AI — Docker Compose
+# Starts all four services: MongoDB, Redis, the Next.js API backend,
+# and the Angular frontend behind nginx.
+#
+# Usage:
+#   cp backend/.env.example backend/.env   # fill in secrets
+#   docker compose up --build
+#
+# Frontend:  http://localhost (port 80)
+# Backend:   http://localhost:8000 (direct, or proxied via nginx at /v1/*)
+# MongoDB:   localhost:27017 (from host, for debugging)
+# Redis:     localhost:6379  (from host, for debugging)
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+      - redis
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override DB/Redis URIs to point at the compose service names
+      MONGODB_URI: mongodb://mongo:27017/accessos
+      REDIS_URL: redis://redis:6379
+      ALLOWED_ORIGINS: http://localhost,http://localhost:80
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
