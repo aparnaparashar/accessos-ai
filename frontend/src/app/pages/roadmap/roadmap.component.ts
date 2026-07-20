@@ -36,21 +36,22 @@ interface Phase { name: string; items: string[]; }
     </section>
   `,
   styles: [`
-    .lede { max-width: 620px; }
     .timeline { display: flex; flex-direction: column; }
-    .phase { display: flex; gap: 24px; }
+    .phase { display: flex; gap: 24px; padding: 12px; border-radius: var(--radius-lg); transition: background var(--duration) var(--ease); }
+    .phase:hover { background: var(--bg-panel); }
     .phase-marker { display: flex; flex-direction: column; align-items: center; }
     .phase-num {
-      width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff;
-      display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); color: var(--bg-base);
+      display: grid; place-items: center; font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+      flex-shrink: 0; box-shadow: var(--shadow-sm);
     }
-    .phase-line { flex: 1; width: 2px; background: var(--line); margin: 6px 0; }
-    .phase-body { padding-bottom: 40px; }
-    .phase-body h3 { margin-bottom: 12px; }
-    .phase-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    .phase-body li { font-size: 14.5px; color: var(--ink-soft); padding-left: 18px; position: relative; }
-    .phase-body li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+    .phase-line { flex: 1; width: 2px; background: linear-gradient(180deg, var(--accent) 0%, var(--line) 100%); margin: 8px 0; min-height: 40px; }
+    .phase-body { padding-bottom: 48px; padding-top: 4px; flex: 1; }
+    .phase-body h3 { margin-bottom: 16px; font-size: 20px; }
+    .phase-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .phase-body li { font-size: 14px; color: var(--ink-soft); padding-left: 20px; position: relative; }
+    .phase-body li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: 600; }
   `],
 })
 export class RoadmapComponent {

@@ -45,16 +45,19 @@ interface Plan {
     </section>
   `,
   styles: [`
-    .lede { max-width: 620px; }
-    .plan-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-    .plan { display: flex; flex-direction: column; gap: 10px; }
-    .plan.featured { border-color: var(--accent); box-shadow: var(--shadow-soft); }
-    .plan-price { font-family: var(--font-display); font-size: 26px; margin-top: 4px; }
-    .plan-req { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
-    .plan ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    .plan li { font-size: 13.5px; color: var(--ink-soft); padding-left: 16px; position: relative; }
+    .plan-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .plan { display: flex; flex-direction: column; gap: 12px; transition: all var(--duration) var(--ease); }
+    .plan:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .plan.featured { position: relative; overflow: hidden; box-shadow: var(--shadow-lg); transform: scale(1.02); border-color: transparent; }
+    .plan.featured:hover { transform: scale(1.02) translateY(-2px); }
+    .plan.featured::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); }
+    .plan-price { font-family: var(--font-display); font-size: 28px; color: var(--ink); margin-top: 4px; }
+    .plan-req { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+    .plan ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .plan li { font-size: 13px; color: var(--ink-soft); padding-left: 16px; position: relative; }
     .plan li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
-    .note-card { max-width: 720px; }
+    .note-card { max-width: 720px; border-left: 4px solid var(--accent); border-radius: var(--radius-md); }
+    
     @media (max-width: 980px) { .plan-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 620px) { .plan-grid { grid-template-columns: 1fr; } }
   `],

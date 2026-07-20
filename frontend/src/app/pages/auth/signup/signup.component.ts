@@ -86,33 +86,22 @@ import { AuthService, UserRole } from '../../../core/auth.service';
   styles: [`
     .auth-page { padding: 64px 0 96px; min-height: 60vh; }
     .auth-wrap { display: flex; justify-content: center; }
-    .auth-card { width: 100%; max-width: 460px; padding: 36px; }
-    .role-toggle { display: flex; gap: 10px; margin: 18px 0 22px; }
+    .auth-card { width: 100%; max-width: 480px; padding: 36px 32px; box-shadow: var(--shadow-lg); border: none; animation: fade-up 0.4s var(--ease); }
+    .role-toggle { display: flex; gap: 12px; margin: 20px 0 24px; }
     .role-btn {
-      flex: 1; text-align: left; padding: 12px 14px; border-radius: 10px;
-      border: 1px solid var(--line); background: #fff; cursor: pointer;
-      font-family: var(--font-body); font-weight: 600; font-size: 13.5px; color: var(--ink);
+      flex: 1; text-align: left; padding: 14px 16px; border-radius: var(--radius-md);
+      border: 1px solid var(--line); background: var(--bg-base); cursor: pointer;
+      font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--ink);
+      transition: all var(--duration) var(--ease);
     }
     .role-btn small { display: block; font-weight: 400; color: var(--ink-soft); margin-top: 4px; font-size: 12px; }
     .role-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .role-btn:hover:not(.active) { background: var(--bg-base); border-color: var(--line-strong); }
     .role-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .field { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-    input {
-      padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line);
-      font-size: 14.5px; font-family: var(--font-body); background: #fff; color: var(--ink);
-    }
-    input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-    input[aria-invalid="true"] { border-color: #C2410D; }
-    .field-error { color: #C2410D; font-size: 12.5px; }
-    .form-error {
-      background: rgba(194,65,13,0.1); color: #C2410D; padding: 10px 12px;
-      border-radius: 10px; font-size: 13.5px; margin-bottom: 16px;
-    }
-    button[type="submit"] { width: 100%; justify-content: center; margin-top: 6px; }
-    button[disabled] { opacity: 0.6; cursor: not-allowed; }
-    .auth-switch { margin-top: 20px; font-size: 13.5px; text-align: center; }
-    .auth-switch a { color: var(--accent); font-weight: 600; }
+    input[aria-invalid="true"] { border-color: var(--error); }
+    button[type="submit"] { width: 100%; justify-content: center; margin-top: 8px; }
+    .auth-switch { margin-top: 24px; font-size: 13px; text-align: center; }
+    .auth-switch a { color: var(--accent); font-weight: 600; transition: color var(--duration) var(--ease); }
   `],
 })
 export class SignupComponent {

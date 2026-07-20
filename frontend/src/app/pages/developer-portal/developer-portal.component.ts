@@ -193,7 +193,7 @@ const ALL_ALLOWED_APIS = ['ocr', 'accessibility.assist'] as const;
               <svg [attr.viewBox]="'0 0 400 ' + (analytics()!.calls_by_api.length * 40 + 10)" class="bars-svg" role="img" aria-label="Bar chart of calls by API">
                 @for (row of analytics()!.calls_by_api; track row.api; let i = $index) {
                   <text [attr.x]="0" [attr.y]="i * 40 + 14" class="bar-label">{{ row.api }}</text>
-                  <rect [attr.x]="0" [attr.y]="i * 40 + 20" [attr.width]="barWidth(row.calls)" height="14" class="bar-rect"></rect>
+                  <rect [attr.x]="0" [attr.y]="i * 40 + 20" [attr.width]="barWidth(row.calls)" height="14" rx="4" class="bar-rect"></rect>
                   <text [attr.x]="barWidth(row.calls) + 6" [attr.y]="i * 40 + 31" class="bar-value">{{ row.calls }}</text>
                 }
               </svg>
@@ -311,71 +311,53 @@ const ALL_ALLOWED_APIS = ['ocr', 'accessibility.assist'] as const;
     </section>
   `,
   styles: [`
-    .lede { max-width: 640px; }
-    .feature-row { padding: 20px 0; border-bottom: 1px solid var(--line); }
-    .feature-row-head { display: flex; align-items: center; gap: 12px; }
-    .feature-row-head h3 { margin: 0; font-size: 16.5px; }
-    .feature-row p { margin: 8px 0 0; max-width: 720px; }
-    .muted { color: var(--ink-soft); font-size: 14px; }
-    table { margin-top: 8px; }
-    .chip-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
 
-    .app-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .app-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
     .app-row {
-      text-align: left; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--line);
+      text-align: left; padding: 16px 20px; border-radius: var(--radius-md); border: 1px solid var(--line);
       background: var(--bg-panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+      transition: all var(--duration) var(--ease);
     }
-    .app-row.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-    .app-row-main { display: flex; align-items: center; gap: 10px; }
-    .app-row-apis { font-size: 12.5px; color: var(--ink-soft); }
+    .app-row:hover { border-color: var(--accent-soft); background: var(--accent-soft); }
+    .app-row.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); background: var(--accent-soft); }
+    .app-row-main { display: flex; align-items: center; gap: 12px; }
+    .app-row-apis { font-size: 12px; color: var(--ink-soft); }
 
-    .create-app-form { max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    fieldset.field { border: none; padding: 0; margin: 0; }
-    legend { font-size: 13.5px; font-weight: 600; padding: 0; margin-bottom: 4px; }
-    label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-    input[type="text"], select {
-      padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
-      font-size: 14.5px; font-family: var(--font-body); background: #fff; color: var(--ink);
-    }
-    .checkbox-row { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-bottom: 6px; }
-    .checkbox-row input { width: 16px; height: 16px; }
-    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .create-app-form { max-width: 500px; display: flex; flex-direction: column; gap: 20px; }
+    .create-app-form h3 { font-size: 18px; margin-bottom: 4px; margin-top: 0; }
 
-    .keys-section { background: var(--bg-panel); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-    .generated-key-panel { border-color: var(--accent); margin-bottom: 20px; }
-    .generated-key-panel h4 { margin-top: 0; font-size: 14.5px; }
-    .key-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; align-items: center; }
+    .keys-section { background: var(--bg-panel); box-shadow: var(--shadow-xs); padding: 32px 0; margin: 32px 0; }
+    .generated-key-panel { border: 1px solid var(--accent); background: var(--accent-soft); box-shadow: var(--shadow-md); margin-bottom: 24px; }
+    .generated-key-panel h4 { margin-top: 0; margin-bottom: 16px; font-size: 14px; }
+    .key-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 13px; align-items: center; }
     .key-row span { color: var(--ink-soft); flex-shrink: 0; }
     .key-row code { word-break: break-all; text-align: right; }
     .key-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn.small { padding: 6px 12px; font-size: 12.5px; }
-    .btn.danger { background: #C2410D; box-shadow: none; }
+    .btn.small { padding: 6px 14px; font-size: 12px; border-radius: var(--radius-sm); }
+    .btn.danger { background: var(--error); box-shadow: none; color: #fff; }
 
-    .metric-card { display: flex; flex-direction: column; gap: 6px; }
-    .analytics-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-    .metric-label { font-size: 12.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
-    .metric-value { font-family: var(--font-display); font-size: 26px; color: var(--ink); }
+    .analytics-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metric-card { display: flex; flex-direction: column; gap: 8px; border-left: 3px solid var(--accent); padding: 16px; background: var(--bg-panel); border-radius: var(--radius-md); border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transition: all var(--duration) var(--ease); }
+    .metric-card:hover { box-shadow: var(--shadow-md); }
+    .metric-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+    .metric-value { font-family: var(--font-display); font-size: 28px; color: var(--ink); line-height: 1; }
     .svg-bars-card h4 { margin-top: 0; font-size: 14px; }
     .bars-svg { width: 100%; height: auto; }
     .bar-label { font-size: 11px; fill: var(--ink-soft); font-family: var(--font-mono); }
     .bar-rect { fill: var(--accent); }
     .bar-value { font-size: 11px; fill: var(--ink); }
 
-    .billing-card { max-width: 720px; }
-    .billing-total { font-size: 15px; }
-    .note-cell { font-size: 12.5px; color: var(--ink-soft); }
-    .disclaimer { font-size: 12px; color: var(--ink-soft); margin-top: 14px; margin-bottom: 0; }
-    .response-error {
-      background: rgba(194,65,13,0.08); border: 1px solid rgba(194,65,13,0.25);
-      padding: 14px 16px; border-radius: 10px; color: #7A2A15; margin: 16px 0; max-width: 720px;
-    }
-    .response-error p { color: inherit; margin: 6px 0 0; font-size: 13.8px; }
+    .billing-card { max-width: 720px; transition: all var(--duration) var(--ease); }
+    .billing-card:hover { box-shadow: var(--shadow-md); }
+    .billing-total { font-size: 16px; margin-bottom: 16px; }
+    .note-cell { font-size: 12px; color: var(--ink-soft); }
+    .disclaimer { font-size: 12px; color: var(--ink-soft); margin-top: 16px; margin-bottom: 0; }
 
-    .audit-detail { font-size: 11.5px; margin: 0; white-space: pre-wrap; word-break: break-word; }
-    .pagination { display: flex; align-items: center; gap: 14px; margin-top: 14px; font-size: 13.5px; }
+    .audit-detail { font-size: 11px; margin: 0; white-space: pre-wrap; word-break: break-word; background: var(--bg-deep); padding: 8px; border-radius: var(--radius-sm); }
+    .pagination { display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 13px; }
 
-    .key-card { max-width: 520px; }
+    .future-apis { background: var(--bg-deep); padding: 32px 0; border-radius: var(--radius-lg); margin-top: 32px; }
   `],
 })
 export class DeveloperPortalComponent implements OnInit {

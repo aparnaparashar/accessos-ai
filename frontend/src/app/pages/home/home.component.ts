@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <section class="hero">
-      <div class="container hero-inner">
+      <div class="container hero-inner fade-up">
         <span class="eyebrow">Product &amp; Technical Overview · Phase 1–3</span>
         <h1>One orchestration layer<br />for every accessibility need.</h1>
         <p class="lede">
@@ -29,13 +29,13 @@ import { RouterLink } from '@angular/router';
 
     <section class="section model">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head fade-up">
           <span class="eyebrow">Why this stands out</span>
           <h2>The old model vs. the AccessOS model</h2>
           <p>Callers never orchestrate multiple APIs themselves — a policy engine reads request
             context and decides which capabilities to invoke and how to fuse them.</p>
         </div>
-        <div class="flow-compare">
+        <div class="flow-compare fade-up">
           <div class="flow old">
             <span class="flow-label">Old model</span>
             <div class="flow-row">
@@ -54,7 +54,7 @@ import { RouterLink } from '@angular/router';
 
     <section class="section two-products">
       <div class="container grid-2">
-        <div class="card">
+        <div class="card fade-up">
           <span class="eyebrow">Product 1</span>
           <h3>AccessOS AI — End-User App</h3>
           <p>An AI accessibility companion for people with visual, hearing, speech, motor,
@@ -62,7 +62,7 @@ import { RouterLink } from '@angular/router';
             every response to match.</p>
           <a routerLink="/features" class="btn btn-ghost">See end-user features →</a>
         </div>
-        <div class="card">
+        <div class="card fade-up">
           <span class="eyebrow">Product 2</span>
           <h3>AccessOS Developer Platform</h3>
           <p>Companies integrate accessibility into their own apps through one API. Manage
@@ -73,7 +73,7 @@ import { RouterLink } from '@angular/router';
       </div>
     </section>
 
-    <section class="section cta-band">
+    <section class="section cta-band fade-up">
       <div class="container cta-inner">
         <h2>Read the full technical architecture</h2>
         <p>Service map, tech stack, API reference, and rate limiting — all in one place.</p>
@@ -84,38 +84,48 @@ import { RouterLink } from '@angular/router';
   styles: [`
     .hero {
       position: relative;
-      padding: 120px 0 80px;
-      background-image: linear-gradient(180deg, rgba(238,241,251,0.55) 0%, rgba(238,241,251,0.92) 78%, var(--bg-base) 100%), url('/assets/hero-bg.png');
+      padding: 100px 0 80px;
+      background-image: radial-gradient(circle at top right, var(--accent-soft), transparent 50%), linear-gradient(180deg, rgba(238,241,251,0.55) 0%, rgba(238,241,251,0.92) 78%, var(--bg-base) 100%), url('/assets/hero-bg.png');
       background-size: cover;
       background-position: center 20%;
       overflow: hidden;
     }
     .hero-inner { max-width: 760px; }
-    .hero h1 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1.08; }
-    .lede { font-size: 17px; max-width: 640px; }
-    .hero-cta { display: flex; gap: 14px; margin: 28px 0 44px; flex-wrap: wrap; }
-    .hero-stats { display: flex; gap: 44px; flex-wrap: wrap; }
-    .hero-stats strong { display: block; font-family: var(--font-display); font-size: 28px; color: var(--accent); }
-    .hero-stats span { font-size: 12.5px; color: var(--ink-soft); font-family: var(--font-mono); }
+    .hero h1 { font-size: clamp(2rem, 4.5vw, 3.2rem); line-height: 1.1; }
+    .hero .lede { font-size: 16px; max-width: 640px; }
+    .hero-cta { display: flex; gap: 16px; margin: 32px 0 48px; flex-wrap: wrap; }
+    .hero-stats { display: flex; gap: 48px; flex-wrap: wrap; }
+    .hero-stats > div { border-left: 3px solid var(--accent); padding-left: 16px; }
+    .hero-stats strong { display: block; font-family: var(--font-display); font-size: 28px; color: var(--accent); line-height: 1.2; margin-bottom: 4px; }
+    .hero-stats span { font-size: 12px; color: var(--ink-soft); font-family: var(--font-mono); }
 
-    .flow-compare { display: flex; flex-direction: column; gap: 18px; }
-    .flow { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; background: var(--bg-panel); }
-    .flow-label { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
-    .flow-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-family: var(--font-display); font-size: 15px; }
+    .fade-up { animation: fade-up var(--duration-slow) var(--ease-out) backwards; }
+    .hero-inner.fade-up { animation-delay: 0.1s; }
+    .section-head.fade-up { animation-delay: 0.1s; }
+    .flow-compare.fade-up { animation-delay: 0.2s; }
+    .card.fade-up:nth-child(1) { animation-delay: 0.1s; }
+    .card.fade-up:nth-child(2) { animation-delay: 0.2s; }
+
+    .flow-compare { display: flex; flex-direction: column; gap: 16px; }
+    .flow { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; background: var(--bg-panel); transition: box-shadow var(--duration) var(--ease); }
+    .flow:hover { box-shadow: var(--shadow-sm); }
+    .flow.new { border-left: 4px solid var(--accent); }
+    .flow-label { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+    .flow-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-family: var(--font-display); font-size: 16px; }
     .flow.old .flow-row span { color: var(--ink-soft); }
     .flow.new .flow-row span { color: var(--accent); font-weight: 600; }
     .flow-row i { color: var(--line); font-style: normal; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .grid-2 .card h3 { margin-top: 10px; }
+    .two-products .card { cursor: pointer; transition: all var(--duration) var(--ease); }
+    .two-products .card:hover { box-shadow: var(--shadow-md); border-color: var(--accent); transform: translateY(-2px); }
+    .two-products h3 { margin-top: 12px; font-size: 20px; }
 
-    .cta-band { text-align: center; }
+    .cta-band { background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-base) 100%); padding: 64px 24px; border-radius: var(--radius-xl); margin-top: 24px; margin-bottom: 24px; text-align: center; }
     .cta-inner { max-width: 560px; margin: 0 auto; }
-    .cta-inner .btn { margin-top: 12px; }
+    .cta-inner .btn { margin-top: 16px; }
 
     @media (max-width: 860px) {
-      .hero { padding: 92px 0 56px; }
-      .grid-2 { grid-template-columns: 1fr; }
+      .hero { padding: 80px 0 48px; }
     }
   `],
 })

@@ -30,24 +30,24 @@ import { RouterLink } from '@angular/router';
   `,
   styles: [`
     .rail {
-      position: fixed; right: 22px; top: 50%; transform: translateY(-50%);
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
       z-index: 30;
-      display: flex; flex-direction: column; gap: 10px;
-      background: rgba(255,255,255,0.7);
-      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--bg-overlay);
+      backdrop-filter: blur(14px);
       border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 10px 8px;
-      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius-full);
+      padding: 8px;
+      box-shadow: var(--shadow-md);
     }
     .rail-item {
-      width: 38px; height: 38px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
       display: grid; place-items: center;
       color: var(--ink-soft);
-      transition: background 0.15s ease, color 0.15s ease;
+      transition: background var(--duration) var(--ease), color var(--duration) var(--ease), transform var(--duration) var(--ease);
     }
     .rail-item svg { width: 18px; height: 18px; }
-    .rail-item:hover { background: var(--accent-soft); color: var(--accent); }
+    .rail-item:hover { background: var(--accent-soft); color: var(--accent); transform: scale(1.08); }
     @media (max-width: 900px) { .rail { display: none; } }
   `],
 })

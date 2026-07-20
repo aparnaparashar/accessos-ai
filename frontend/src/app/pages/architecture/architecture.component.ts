@@ -135,20 +135,18 @@ interface RouteRow { method: string; path: string; status: 'live' | 'planned'; d
     </section>
   `,
   styles: [`
-    .lede { max-width: 700px; }
     .service-map { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .map-row { width: 100%; max-width: 760px; text-align: center; padding: 14px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-panel); font-size: 13.8px; }
-    .map-row.highlight { border-color: var(--accent); color: var(--accent); font-weight: 600; background: var(--accent-soft); }
-    .map-arrow { color: var(--ink-soft); font-size: 12.5px; text-align: center; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-    .ml-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-    .ml-list li { font-size: 14.5px; padding: 10px 14px; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 8px; }
-    .stack-section table, .endpoints-section table { font-size: 13.5px; }
-    .mono { font-family: var(--font-mono); font-size: 12.5px; }
-    .note { margin-top: 20px; font-size: 13.5px; padding: 16px 18px; background: var(--accent-soft); border-radius: 10px; color: var(--ink); }
-    .security-section .card h4 { display: flex; align-items: center; gap: 10px; font-size: 15px; }
-    .security-section .card p { font-size: 13.8px; margin: 8px 0 0; }
-    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
+    .map-row { width: 100%; max-width: 760px; text-align: center; padding: 14px 20px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg-panel); font-size: 14px; transition: all var(--duration) var(--ease); }
+    .map-row.highlight { border: 2px solid var(--accent); color: var(--accent); font-weight: 600; background: linear-gradient(135deg, var(--accent-soft) 0%, rgba(79,70,229,0.08) 100%); }
+    .map-arrow { color: var(--ink-muted); font-size: 12px; text-align: center; }
+    .ml-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+    .ml-list li { font-size: 14px; padding: 12px 16px; background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius-sm); transition: all var(--duration) var(--ease); }
+    .ml-list li:hover { background: var(--accent-soft); }
+    .stack-section table, .endpoints-section table { font-size: 13px; }
+    .security-section .card { transition: all var(--duration) var(--ease); }
+    .security-section .card:hover { box-shadow: var(--shadow-md); }
+    .security-section .card h4 { display: flex; align-items: center; gap: 12px; font-size: 16px; margin: 0; }
+    .security-section .card p { font-size: 13px; margin: 8px 0 0; }
   `],
 })
 export class ArchitectureComponent {

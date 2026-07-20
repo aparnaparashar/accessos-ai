@@ -83,21 +83,7 @@ interface Option<T> {
     </section>
   `,
   styles: [`
-    .lede { max-width: 640px; }
-    .settings-form { max-width: 520px; display: flex; flex-direction: column; gap: 22px; }
-    .field { display: flex; flex-direction: column; gap: 8px; }
-    fieldset.field { border: none; padding: 0; margin: 0; }
-    legend { font-size: 13.5px; font-weight: 600; color: var(--ink); padding: 0; margin-bottom: 4px; }
-    label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-    select {
-      padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line);
-      font-size: 14.5px; font-family: var(--font-body); background: #fff; color: var(--ink);
-    }
-    select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .checkbox-row { display: flex; align-items: center; gap: 9px; font-weight: 400; margin-bottom: 6px; }
-    .checkbox-row input { width: 17px; height: 17px; }
-    .hint { font-size: 12.5px; color: var(--ink-soft); font-weight: 400; }
-    .actions { display: flex; gap: 12px; }
+    .settings-form { max-width: 520px; display: flex; flex-direction: column; gap: 24px; }
   `],
 })
 export class SettingsComponent {

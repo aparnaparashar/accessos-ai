@@ -90,17 +90,20 @@ interface Feature {
     </section>
   `,
   styles: [`
-    .page-head { padding-bottom: 24px; }
-    .lede { max-width: 620px; }
     .feature-list { display: flex; flex-direction: column; }
-    .feature-row { padding: 22px 0; border-bottom: 1px solid var(--line); }
+    .feature-row { padding: 24px 16px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; transition: all var(--duration) var(--ease); }
+    .feature-row:hover { border-left-color: var(--accent); padding-left: 24px; background: var(--bg-panel); }
     .feature-row-head { display: flex; align-items: center; gap: 12px; }
-    .feature-row-head h3 { margin: 0; font-size: 17px; }
-    .feature-row p { margin-top: 8px; margin-bottom: 0; max-width: 720px; }
-    .deep-dive { background: var(--bg-panel); border-top: 1px solid var(--line); }
-    .dive-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-    .dive-grid .card h4 { font-size: 15px; margin-bottom: 8px; }
-    .dive-grid .card p { font-size: 13.8px; margin: 0; }
+    .feature-row-head h3 { margin: 0; font-size: 16px; }
+    .feature-row p { margin-top: 8px; margin-bottom: 0; max-width: 720px; font-size: 14px; }
+    
+    .deep-dive { background: var(--bg-panel); box-shadow: inset 0 4px 6px -4px var(--shadow-xs); border-top: 1px solid var(--line); }
+    .dive-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .dive-grid .card { transition: all var(--duration) var(--ease); }
+    .dive-grid .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .dive-grid .card h4 { font-size: 16px; margin-bottom: 8px; }
+    .dive-grid .card p { font-size: 13px; margin: 0; }
+    
     @media (max-width: 980px) { .dive-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 620px) { .dive-grid { grid-template-columns: 1fr; } }
   `],

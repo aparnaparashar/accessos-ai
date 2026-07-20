@@ -62,24 +62,11 @@ import { AuthService } from '../../../core/auth.service';
   styles: [`
     .auth-page { padding: 64px 0 96px; min-height: 60vh; }
     .auth-wrap { display: flex; justify-content: center; }
-    .auth-card { width: 100%; max-width: 440px; padding: 36px; }
-    .field { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
-    input {
-      padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line);
-      font-size: 14.5px; font-family: var(--font-body); background: #fff; color: var(--ink);
-    }
-    input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-    input[aria-invalid="true"] { border-color: #C2410D; }
-    .field-error { color: #C2410D; font-size: 12.5px; }
-    .form-error {
-      background: rgba(194,65,13,0.1); color: #C2410D; padding: 10px 12px;
-      border-radius: 10px; font-size: 13.5px; margin-bottom: 16px;
-    }
-    button[type="submit"] { width: 100%; justify-content: center; margin-top: 6px; }
-    button[disabled] { opacity: 0.6; cursor: not-allowed; }
-    .auth-switch { margin-top: 20px; font-size: 13.5px; text-align: center; }
-    .auth-switch a { color: var(--accent); font-weight: 600; }
+    .auth-card { width: 100%; max-width: 440px; padding: 36px 32px; box-shadow: var(--shadow-lg); border: none; animation: fade-up 0.4s var(--ease); }
+    input[aria-invalid="true"] { border-color: var(--error); }
+    button[type="submit"] { width: 100%; justify-content: center; margin-top: 8px; }
+    .auth-switch { margin-top: 24px; font-size: 13px; text-align: center; }
+    .auth-switch a { color: var(--accent); font-weight: 600; transition: color var(--duration) var(--ease); }
   `],
 })
 export class LoginComponent {
