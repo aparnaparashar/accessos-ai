@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SettingsComponent } from './settings.component';
 import { SettingsService, DEFAULT_PREFERENCES } from '../../core/settings.service';
 import { ToastService } from '../../core/toast.service';
@@ -13,6 +15,7 @@ describe('SettingsComponent', () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [SettingsComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     settingsService = TestBed.inject(SettingsService);
