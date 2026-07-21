@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-docs',
@@ -40,7 +41,7 @@ import { CommonModule } from '@angular/common';
               <span>cURL Request</span>
               <button class="copy-btn" (click)="copyText(quickStartCurl)">{{ copied ? '✓ Copied' : 'Copy' }}</button>
             </div>
-            <pre><code>{{ quickStartCurl }}</code></pre>
+            <pre><code [innerHTML]="highlightCode(quickStartCurl)"></code></pre>
           </div>
 
           <div class="grid-2 mt-8">
@@ -94,10 +95,10 @@ import { CommonModule } from '@angular/common';
           <div class="language-selector">
             <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('ocr', selectedLang, { image_url: 'https://example.com/document.jpg' }) }}</code></pre>
+          <pre><code [innerHTML]="highlightCode(getCodeSnippet('ocr', selectedLang, { image_url: 'https://example.com/document.jpg' }))"></code></pre>
 
           <h3 class="mt-6">Response (200 OK)</h3>
-          <pre><code>{{ ocrResponse }}</code></pre>
+          <pre><code [innerHTML]="highlightJson(ocrResponse)"></code></pre>
         </section>
 
         <!-- API: Vision -->
@@ -114,10 +115,10 @@ import { CommonModule } from '@angular/common';
           <div class="language-selector">
             <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('vision', selectedLang, { image_url: 'https://example.com/photo.jpg', simplified: false }) }}</code></pre>
+          <pre><code [innerHTML]="highlightCode(getCodeSnippet('vision', selectedLang, { image_url: 'https://example.com/photo.jpg', simplified: false }))"></code></pre>
 
           <h3 class="mt-6">Response (200 OK)</h3>
-          <pre><code>{{ visionResponse }}</code></pre>
+          <pre><code [innerHTML]="highlightJson(visionResponse)"></code></pre>
         </section>
 
         <!-- API: Simplify -->
@@ -134,10 +135,10 @@ import { CommonModule } from '@angular/common';
           <div class="language-selector">
             <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('simplify', selectedLang, { text: 'The mitochondria is the power house of the cell...' }) }}</code></pre>
+          <pre><code [innerHTML]="highlightCode(getCodeSnippet('simplify', selectedLang, { text: 'The mitochondria is the power house of the cell...' }))"></code></pre>
 
           <h3 class="mt-6">Response (200 OK)</h3>
-          <pre><code>{{ simplifyResponse }}</code></pre>
+          <pre><code [innerHTML]="highlightJson(simplifyResponse)"></code></pre>
         </section>
 
         <!-- API: Sign Gloss -->
@@ -154,10 +155,10 @@ import { CommonModule } from '@angular/common';
           <div class="language-selector">
             <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('sign-language', selectedLang, { text: 'Where is the nearest train station?' }) }}</code></pre>
+          <pre><code [innerHTML]="highlightCode(getCodeSnippet('sign-language', selectedLang, { text: 'Where is the nearest train station?' }))"></code></pre>
 
           <h3 class="mt-6">Response (200 OK)</h3>
-          <pre><code>{{ signResponse }}</code></pre>
+          <pre><code [innerHTML]="highlightJson(signResponse)"></code></pre>
         </section>
 
         <!-- API: Accessibility Orchestrator -->
@@ -174,10 +175,10 @@ import { CommonModule } from '@angular/common';
           <div class="language-selector">
             <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('accessibility', selectedLang, { text: 'Take one pill before sleep.', reading_level: 'simplified' }) }}</code></pre>
+          <pre><code [innerHTML]="highlightCode(getCodeSnippet('accessibility', selectedLang, { text: 'Take one pill before sleep.', reading_level: 'simplified' }))"></code></pre>
 
           <h3 class="mt-6">Response (200 OK)</h3>
-          <pre><code>{{ accessibilityResponse }}</code></pre>
+          <pre><code [innerHTML]="highlightJson(accessibilityResponse)"></code></pre>
         </section>
 
         <!-- Rate Limits & Errors -->
@@ -311,6 +312,8 @@ import { CommonModule } from '@angular/common';
   `],
 })
 export class DocumentationComponent {
+  constructor(private sanitizer: DomSanitizer) {}
+
   activeSection = 'intro';
   selectedLang = 'cURL';
   copied = false;
@@ -403,5 +406,28 @@ export class DocumentationComponent {
       return `import requests\n\nurl = "http://localhost:8000/v1/${api}"\nheaders = {\n    "Authorization": "Bearer YOUR_SECRET_KEY",\n    "X-Client-Id": "YOUR_CLIENT_ID",\n    "Content-Type": "application/json"\n}\npayload = ${jsonStr}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.json())`;
     }
     return `const res = await fetch('http://localhost:8000/v1/${api}', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer YOUR_SECRET_KEY',\n    'X-Client-Id': 'YOUR_CLIENT_ID',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify(${jsonStr})\n});\nconst data = await res.json();\nconsole.log(data);`;
+  }
+
+  highlightCode(code: string): SafeHtml {
+    if (!code) return '';
+    let html = code
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/("[^"]*"|'[^']*')/g, '<span class="token-string">$1</span>')
+      .replace(/\b(const|await|async|import|from|return|function|class|def|import requests|curl|POST|GET|Bearer)\b/g, '<span class="token-keyword">$1</span>')
+      .replace(/( -X | -H | -d )/g, '<span class="token-property">$1</span>')
+      .replace(/\b([a-zA-Z0-9_]+)(?=\()/g, '<span class="token-function">$1</span>')
+      .replace(/([{}[\],])/g, '<span class="token-punctuation">$1</span>');
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  highlightJson(code: string): SafeHtml {
+    if (!code) return '';
+    let html = code
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/("[^"]*")(\s*:)/g, '<span class="token-keyword">$1</span>$2')
+      .replace(/:\\s*("[^"]*")/g, ': <span class="token-string">$1</span>')
+      .replace(/\b(true|false|null|[0-9]+(?:\.[0-9]+)?)\b/g, '<span class="token-property">$1</span>')
+      .replace(/([{}[\],])/g, '<span class="token-punctuation">$1</span>');
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }
