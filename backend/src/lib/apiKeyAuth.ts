@@ -1,41 +1,36 @@
 import { connectDB } from "@/lib/db";
 import ApiKey from "@/lib/models/ApiKey";
-import Application, { IApplication } from "@/lib/models/Application";
+import Project, { IProject } from "@/lib/models/Project";
 import { verifySecret, computeSignature, timingSafeEqual } from "@/lib/keys";
 import { checkDailyRateLimit } from "@/lib/redis";
-import { planDailyLimit } from "@/lib/plans";
 import { Types } from "mongoose";
 
 /**
- * API-key request authenticator for the developer-product surface
- * (Section 10/12), e.g. POST /v1/ocr.
+ * API-key request authenticator for the product API surface
+ * (POST /ocr, /vision, /simplify, /accessibility, /sign-language).
  *
  * Required headers:
- *   Authorization: Bearer <secret key>   (the plaintext returned once at key creation/rotation)
- *   X-Client-Id: <client id>             (stable, non-secret identifier for the Application/key pair)
+ *   Authorization: Bearer <secret key>
+ *   X-Client-Id: <client id>
  *
- * Optional replay-protected signing (recommended for production callers):
- *   X-Timestamp: <unix ms>                must be within 5 minutes of server time
- *   X-Nonce: <random string>              single-use, enforced via consumeNonce (Redis)
- *   X-Signature: <hex hmac>               = computeSignature(secretKey, method, path, timestamp, nonce, rawBody)
- * If X-Signature is present, all three of X-Timestamp/X-Nonce/X-Signature are required and verified.
- * If none are present, the request is authenticated by bearer secret + client id alone.
+ * Optional replay-protected signing:
+ *   X-Timestamp, X-Nonce, X-Signature — see lib/keys.ts for details.
  */
 
 export type ApiKeyAuthResult =
   | {
       ok: true;
-      application: IApplication & { _id: Types.ObjectId };
+      project: IProject & { _id: Types.ObjectId };
       apiKeyId: Types.ObjectId;
       rateLimit: { allowed: true; count: number; limit: number };
     }
   | { ok: false; status: number; error: string; detail?: string };
 
 const SIGNATURE_WINDOW_MS = 5 * 60 * 1000;
+const DAILY_RATE_LIMIT = Number(process.env.DAILY_RATE_LIMIT || 1000);
 
 export async function authenticateApiKey(
   req: Request,
-  apiName: string,
   rawBody: string
 ): Promise<ApiKeyAuthResult> {
   const authHeader = req.headers.get("authorization") || "";
@@ -103,32 +98,24 @@ export async function authenticateApiKey(
     }
   }
 
-  const application = await Application.findById(apiKey.application);
-  if (!application) {
-    return { ok: false, status: 401, error: "invalid_key", detail: "Application for this key no longer exists" };
+  const project = await Project.findById(apiKey.project);
+  if (!project) {
+    return { ok: false, status: 401, error: "invalid_key", detail: "Project for this key no longer exists" };
   }
 
-  if (!application.allowed_apis.includes(apiName)) {
-    return {
-      ok: false,
-      status: 403,
-      error: "api_not_allowed",
-      detail: `This application's plan does not include the "${apiName}" API`,
-    };
-  }
-
-  const limit = planDailyLimit(application.plan);
-  const rate = await checkDailyRateLimit(`app:${application._id.toString()}`, limit);
+  // Flat daily rate limit from env.
+  const rate = await checkDailyRateLimit(`project:${project._id.toString()}`, DAILY_RATE_LIMIT);
   if (!rate.allowed) {
-    return { ok: false, status: 429, error: "rate_limit_exceeded", detail: `Daily quota of ${limit} requests exceeded` };
+    return { ok: false, status: 429, error: "rate_limit_exceeded", detail: `Daily quota of ${DAILY_RATE_LIMIT} requests exceeded` };
   }
 
   apiKey.last_used_at = new Date();
+  apiKey.total_requests += 1;
   await apiKey.save();
 
   return {
     ok: true,
-    application: application as IApplication & { _id: Types.ObjectId },
+    project: project as IProject & { _id: Types.ObjectId },
     apiKeyId: apiKey._id as Types.ObjectId,
     rateLimit: { allowed: true, count: rate.count, limit: rate.limit },
   };

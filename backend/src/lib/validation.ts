@@ -2,16 +2,15 @@ import { z, ZodSchema } from "zod";
 import { NextResponse } from "next/server";
 
 /**
- * Shared request-body validation (Section 14 hardening). Every route parses
- * its body through one of these schemas instead of trusting `await
- * req.json()` shape directly.
+ * Shared request-body validation schemas.
  */
+
+// ── Auth ──────────────────────────────────────────────────────────────
 
 export const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "password must be at least 8 characters"),
   full_name: z.string().min(1),
-  role: z.enum(["end_user", "developer"]).optional(),
 });
 
 export const loginSchema = z.object({
@@ -23,63 +22,99 @@ export const refreshSchema = z.object({
   refresh_token: z.string().min(1),
 });
 
-export const preferencesSchema = z.object({
-  primary_disability: z.enum([
-    "low_vision",
-    "blind",
-    "deaf",
-    "hard_of_hearing",
-    "motor",
-    "cognitive",
-    "none",
-  ]),
-  reading_level: z.enum(["standard", "simplified"]),
-  output_modalities: z.array(z.enum(["audio", "text", "haptic"])),
+// ── Developer Profile ─────────────────────────────────────────────────
+
+export const updateProfileSchema = z.object({
+  full_name: z.string().min(1).optional(),
+  company: z.string().optional(),
 });
 
-export const assistSchema = z.object({
-  user_context: z.object({ preferences: preferencesSchema }),
-  input: z.object({
-    image: z.string().nullable().optional(),
-    audio: z.string().nullable().optional(),
-    document: z.string().nullable().optional(),
-    text: z.string().nullable().optional(),
-  }),
-  device: z
-    .object({
-      has_speaker: z.boolean().optional(),
-      has_haptics: z.boolean().optional(),
-      screen_reader_active: z.boolean().optional(),
-      bandwidth: z.string().optional(),
-    })
-    .optional(),
-  situation: z
-    .object({
-      location_type: z.string().optional(),
-      urgency: z.enum(["normal", "emergency"]).optional(),
-    })
-    .optional(),
-});
+// ── Projects ──────────────────────────────────────────────────────────
 
-export const createApplicationSchema = z.object({
+export const createProjectSchema = z.object({
   name: z.string().min(1),
-  plan: z.enum(["free", "starter", "pro"]).optional(),
-  allowed_apis: z.array(z.string()).optional(),
+  description: z.string().optional(),
+  environment: z.enum(["production", "development", "staging"]).optional(),
 });
 
-export const updateApplicationSchema = z.object({
+export const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
-  plan: z.enum(["free", "starter", "pro"]).optional(),
-  allowed_apis: z.array(z.string()).optional(),
+  description: z.string().optional(),
+  environment: z.enum(["production", "development", "staging"]).optional(),
+  status: z.enum(["active", "inactive", "archived"]).optional(),
 });
+
+// ── API Keys ──────────────────────────────────────────────────────────
+
+export const createApiKeySchema = z.object({
+  name: z.string().min(1).optional(),
+  environment: z.enum(["production", "development"]).optional(),
+});
+
+export const renameApiKeySchema = z.object({
+  name: z.string().min(1),
+});
+
+// ── Webhooks ──────────────────────────────────────────────────────────
+
+export const createWebhookSchema = z.object({
+  url: z.string().url(),
+  events: z.array(z.string()).optional(),
+  enabled: z.boolean().optional(),
+  retry_policy: z.object({
+    max_retries: z.number().min(0).max(10).optional(),
+    retry_interval_seconds: z.number().min(10).max(3600).optional(),
+  }).optional(),
+});
+
+export const updateWebhookSchema = z.object({
+  url: z.string().url().optional(),
+  events: z.array(z.string()).optional(),
+  enabled: z.boolean().optional(),
+  retry_policy: z.object({
+    max_retries: z.number().min(0).max(10).optional(),
+    retry_interval_seconds: z.number().min(10).max(3600).optional(),
+  }).optional(),
+});
+
+// ── Product APIs ──────────────────────────────────────────────────────
 
 export const ocrRequestSchema = z.object({
   image: z.string().min(1, "image (base64/data URL) is required"),
 });
 
-export const checkoutSchema = z.object({
-  plan: z.enum(["starter", "pro"]),
+export const visionRequestSchema = z.object({
+  image: z.string().min(1, "image (base64/data URL) is required"),
+  simplified: z.boolean().optional(),
 });
+
+export const simplifyRequestSchema = z.object({
+  text: z.string().min(1, "text is required"),
+});
+
+export const accessibilityRequestSchema = z.object({
+  image: z.string().nullable().optional(),
+  text: z.string().nullable().optional(),
+  reading_level: z.enum(["standard", "simplified"]).optional(),
+  output_modalities: z.array(z.enum(["audio", "text", "haptic"])).optional(),
+});
+
+export const signLanguageRequestSchema = z.object({
+  text: z.string().min(1, "text is required"),
+});
+
+// ── Settings ──────────────────────────────────────────────────────────
+
+export const changePasswordSchema = z.object({
+  current_password: z.string().min(1),
+  new_password: z.string().min(8, "password must be at least 8 characters"),
+});
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1),
+});
+
+// ── Shared parser ─────────────────────────────────────────────────────
 
 /** Parses+validates a JSON body against a schema; returns a 400 response on failure. */
 export async function parseJsonBody<T>(

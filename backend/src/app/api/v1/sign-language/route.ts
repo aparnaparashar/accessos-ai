@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/apiKeyAuth";
-import { runOCR } from "@/lib/ocr";
+import { runSignGloss } from "@/lib/orchestrator";
 import RequestLog from "@/lib/models/RequestLog";
-import { ocrRequestSchema } from "@/lib/validation";
+import { signLanguageRequestSchema } from "@/lib/validation";
 
 /**
- * POST /ocr — Perform OCR on an image. Requires API Key authentication.
+ * POST /sign-language — Convert text to sign-language gloss notation. Requires API Key.
  */
 export async function POST(req: Request) {
   const start = Date.now();
@@ -25,14 +25,14 @@ export async function POST(req: Request) {
 
   try {
     const json = rawBody ? JSON.parse(rawBody) : {};
-    const parsed = ocrRequestSchema.safeParse(json);
+    const parsed = signLanguageRequestSchema.safeParse(json);
     if (!parsed.success) {
       statusCode = 400;
       errorDetail = "Invalid request format";
       responseBody = { error: "invalid_request", detail: parsed.error.flatten().fieldErrors };
     } else {
-      const result = await runOCR(parsed.data.image);
-      responseBody = { text: result.text };
+      const result = runSignGloss(parsed.data.text);
+      responseBody = result;
     }
   } catch (err) {
     statusCode = 500;
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   await RequestLog.create({
     project: auth.project._id,
     api_key: auth.apiKeyId,
-    endpoint: "/ocr",
+    endpoint: "/sign-language",
     method: "POST",
     status_code: statusCode,
     latency_ms,

@@ -6,8 +6,8 @@ import { signAccessToken, signRefreshToken } from "@/lib/jwt";
 import { loginSchema, parseJsonBody } from "@/lib/validation";
 
 /**
- * POST /v1/auth/login
- * Exchanges credentials for an access + refresh token pair. Section 08.
+ * POST /auth/login
+ * Exchanges credentials for an access + refresh token pair.
  */
 export async function POST(req: Request) {
   try {
@@ -26,12 +26,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
     }
 
-    const payload = { sub: user._id.toString(), email: user.email, role: user.role as "end_user" | "developer" };
+    const payload = { sub: user._id.toString(), email: user.email };
     return NextResponse.json({
       access_token: signAccessToken(payload),
       refresh_token: signRefreshToken(payload),
       token_type: "bearer",
-      user: { id: user._id, email: user.email, full_name: user.full_name, role: user.role },
+      user: { id: user._id, email: user.email, full_name: user.full_name },
     });
   } catch (err) {
     return NextResponse.json({ error: "server_error", detail: (err as Error).message }, { status: 500 });
