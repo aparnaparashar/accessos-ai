@@ -319,8 +319,18 @@ pre {
 }
 button[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
-/* ======================= ANIMATIONS ================================ */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ==================== LOGO ENTRANCE BACKDROP ======================== */
+.logo-entrance-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  background-image: radial-gradient(circle at center, rgba(99, 102, 241, 0.08) 0%, transparent 65%);
+  z-index: 10000;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 750ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+.logo-entrance-overlay.fading {
+  opacity: 0;
+}
+

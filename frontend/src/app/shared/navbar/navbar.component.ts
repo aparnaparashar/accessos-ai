@@ -1,7 +1,8 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, AfterViewInit, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { LogoAnimationService } from '../../core/logo-animation.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,7 +12,7 @@ import { AuthService } from '../../core/auth.service';
     <header class="nav">
       <div class="container nav-inner">
         <a routerLink="/" class="brand">
-          <img src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
+          <img #brandLogo src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
           <span class="brand-name">AccessOS <b class="gradient-text">AI</b></span>
         </a>
 
@@ -88,6 +89,9 @@ import { AuthService } from '../../core/auth.service';
       border-radius: var(--radius-sm);
       filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
       transition: transform var(--duration) var(--ease), filter var(--duration) var(--ease);
+    }
+    .brand-logo.logo-animating {
+      visibility: hidden !important;
     }
     .brand:hover .brand-logo {
       transform: scale(1.08) rotate(3deg);
@@ -188,11 +192,107 @@ import { AuthService } from '../../core/auth.service';
     }
   `],
 })
-export class NavbarComponent {
+export class NavbarComponent implements AfterViewInit {
   menuOpen = false;
   profileOpen = false;
 
-  constructor(public auth: AuthService, private router: Router, private elRef: ElementRef) {}
+  @ViewChild('brandLogo') brandLogo!: ElementRef<HTMLImageElement>;
+
+  private logoAnimation = inject(LogoAnimationService);
+  public auth = inject(AuthService);
+  private router = inject(Router);
+  private elRef = inject(ElementRef);
+  private ngZone = inject(NgZone);
+
+  ngAfterViewInit() {
+    if (typeof window === 'undefined') return;
+
+    if (this.logoAnimation.shouldAnimate()) {
+      this.ngZone.runOutsideAngular(() => {
+        requestAnimationFrame(() => {
+          this.runLogoEntranceAnimation();
+        });
+      });
+    }
+  }
+
+  private runLogoEntranceAnimation() {
+    const logoEl = this.brandLogo?.nativeElement;
+
+    // 1. Hide real logo in navbar while clone animates
+    if (logoEl) {
+      logoEl.classList.add('logo-animating');
+    }
+
+    // 2. Create backdrop overlay
+    const backdrop = document.createElement('div');
+    backdrop.className = 'logo-entrance-overlay';
+    document.body.appendChild(backdrop);
+
+    // 3. Create clone image (hardcode asset path so clone.src is NEVER empty/broken)
+    const clone = document.createElement('img');
+    clone.src = 'assets/logo_accessos-ai.png';
+    clone.alt = 'AccessOS AI Logo';
+
+    // Initial centered size: ~38% of viewport, clamped between 160px and 360px
+    const startSize = Math.min(Math.max(window.innerWidth * 0.38, 160), 360);
+    const startLeft = (window.innerWidth - startSize) / 2;
+    const startTop = (window.innerHeight - startSize) / 2;
+
+    clone.style.cssText = `
+      position: fixed;
+      z-index: 10001;
+      pointer-events: none;
+      object-fit: contain;
+      border-radius: 12px;
+      width: ${startSize}px;
+      height: ${startSize}px;
+      left: ${startLeft}px;
+      top: ${startTop}px;
+      filter: drop-shadow(0 0 50px rgba(99, 102, 241, 0.75)) drop-shadow(0 0 100px rgba(168, 85, 247, 0.4));
+      will-change: width, height, left, top, filter, border-radius;
+    `;
+
+    document.body.appendChild(clone);
+
+    // Force browser reflow to commit starting position
+    clone.getBoundingClientRect();
+
+    // 4. Start fluid movement to navbar after 200ms hold
+    setTimeout(() => {
+      backdrop.classList.add('fading');
+
+      // Measure target navbar position dynamically
+      const targetRect = logoEl ? logoEl.getBoundingClientRect() : { left: 24, top: 16, width: 32, height: 32 };
+      const endW = targetRect.width || 32;
+      const endH = targetRect.height || 32;
+      const endL = targetRect.left || 24;
+      const endT = targetRect.top || 16;
+
+      const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      const dur = '750ms';
+
+      clone.style.transition = `width ${dur} ${easing}, height ${dur} ${easing}, left ${dur} ${easing}, top ${dur} ${easing}, filter ${dur} ${easing}, border-radius ${dur} ${easing}`;
+      clone.style.width = endW + 'px';
+      clone.style.height = endH + 'px';
+      clone.style.left = endL + 'px';
+      clone.style.top = endT + 'px';
+      clone.style.filter = 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.35))';
+      clone.style.borderRadius = '6px';
+    }, 200);
+
+    // 5. Clean up clone & backdrop after 1000ms total
+    setTimeout(() => {
+      clone.remove();
+      backdrop.remove();
+
+      if (logoEl) {
+        logoEl.classList.remove('logo-animating');
+      }
+
+      this.logoAnimation.markAnimated();
+    }, 1500);
+  }
 
   avatarInitial(): string {
     const user = this.auth.user();
