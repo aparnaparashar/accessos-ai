@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
+import { SettingsService, AccessibilityPreferences, DEFAULT_PREFERENCES, OutputModality } from '../../core/settings.service';
+import { ToastService } from '../../core/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -16,6 +18,56 @@ import { AuthService } from '../../core/auth.service';
       </div>
 
       <div class="grid-2 mt-8 align-start">
+        <!-- Accessibility Preferences Card -->
+        <div class="card">
+          <h3>Accessibility Preferences</h3>
+          <p class="hint mt-1">These default preferences are sent automatically with AI Companion requests.</p>
+
+          <div class="field mt-4">
+            <label for="disability">Primary Accessibility Needs</label>
+            <select id="disability" [(ngModel)]="form.primary_disability">
+              <option value="none">None / Default</option>
+              <option value="low_vision">Low Vision</option>
+              <option value="blind">Blind</option>
+              <option value="deaf">Deaf</option>
+              <option value="hard_of_hearing">Hard of Hearing</option>
+              <option value="motor">Motor Impairment</option>
+              <option value="cognitive">Cognitive Impairment</option>
+            </select>
+          </div>
+
+          <div class="field mt-4">
+            <label for="reading-level">Reading Level</label>
+            <select id="reading-level" [(ngModel)]="form.reading_level">
+              <option value="standard">Standard</option>
+              <option value="simplified">Simplified</option>
+            </select>
+          </div>
+
+          <div class="field mt-4">
+            <label>Output Modalities</label>
+            <div class="flex gap-4 mt-2">
+              <label class="toggle-label">
+                <input type="checkbox" [checked]="form.output_modalities.includes('text')" (change)="toggleModality('text')" />
+                Text
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" [checked]="form.output_modalities.includes('audio')" (change)="toggleModality('audio')" />
+                Audio
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" [checked]="form.output_modalities.includes('haptic')" (change)="toggleModality('haptic')" />
+                Haptic
+              </label>
+            </div>
+          </div>
+
+          <div class="flex gap-4 mt-6">
+            <button class="btn btn-primary" (click)="save()">Save Preferences</button>
+            <button class="btn btn-ghost" (click)="resetDefaults()">Reset Defaults</button>
+          </div>
+        </div>
+
         <!-- Developer Profile Card -->
         <div class="card">
           <h3>Developer Profile</h3>
@@ -73,16 +125,23 @@ import { AuthService } from '../../core/auth.service';
   `,
   styles: [`
     .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .toggle-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; }
   `],
 })
 export class SettingsComponent {
+  form: AccessibilityPreferences = { ...DEFAULT_PREFERENCES };
   fullName = '';
   email = '';
   company = 'Developer Corp';
   storeLogs = 'enabled';
   ocrEngine = 'accessos-v2';
 
-  constructor(public auth: AuthService) {
+  constructor(
+    public auth: AuthService,
+    private settingsService: SettingsService,
+    private toast: ToastService
+  ) {
+    this.form = { ...this.settingsService.get() };
     const u = this.auth.user();
     if (u) {
       this.fullName = u.full_name || '';
@@ -90,7 +149,31 @@ export class SettingsComponent {
     }
   }
 
+  save() {
+    if (!this.form.output_modalities || this.form.output_modalities.length === 0) {
+      this.toast.error('Choose at least one output modality.');
+      return;
+    }
+    this.settingsService.save(this.form);
+    this.toast.success('Preferences saved.');
+  }
+
+  toggleModality(modality: OutputModality) {
+    const current = this.form.output_modalities || [];
+    if (current.includes(modality)) {
+      this.form.output_modalities = current.filter((m) => m !== modality);
+    } else {
+      this.form.output_modalities = [...current, modality];
+    }
+  }
+
+  resetDefaults() {
+    this.settingsService.reset();
+    this.form = { ...this.settingsService.get() };
+    this.toast.info('Preferences reset to defaults.');
+  }
+
   saveProfile() {
-    alert('Developer settings updated successfully.');
+    this.toast.success('Developer settings updated successfully.');
   }
 }
