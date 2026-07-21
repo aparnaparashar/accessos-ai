@@ -87,7 +87,7 @@ import { LogoAnimationService } from '../../core/logo-animation.service';
       width: auto;
       object-fit: contain;
       border-radius: var(--radius-sm);
-      filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
+      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
       transition: transform var(--duration) var(--ease), filter var(--duration) var(--ease);
     }
     .brand-logo.logo-animating {
@@ -95,7 +95,7 @@ import { LogoAnimationService } from '../../core/logo-animation.service';
     }
     .brand:hover .brand-logo {
       transform: scale(1.08) rotate(3deg);
-      filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
+      filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
     }
     .brand-name { font-family: var(--font-display); font-size: 24px; font-weight: 500; color: #fff; letter-spacing: -0.04em; }
     .gradient-text {

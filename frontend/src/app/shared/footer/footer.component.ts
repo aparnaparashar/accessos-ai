@@ -40,7 +40,7 @@ import { RouterLink } from '@angular/router';
     .foot-inner { display: flex; justify-content: space-between; gap: 48px; flex-wrap: wrap; padding-bottom: 48px; }
     .foot-brand { max-width: 360px; }
     .brand { display: flex; align-items: center; gap: 8px; }
-    .brand-logo { height: 28px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
+    .brand-logo { height: 28px; width: auto; object-fit: contain; }
     .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; }
     .gradient-text {
       background: var(--vibrant-gradient);
