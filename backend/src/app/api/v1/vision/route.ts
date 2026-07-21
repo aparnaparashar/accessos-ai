@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/apiKeyAuth";
-import { runOCR } from "@/lib/ocr";
+import { runVisionDescribe } from "@/lib/orchestrator";
 import RequestLog from "@/lib/models/RequestLog";
-import { ocrRequestSchema } from "@/lib/validation";
+import { visionRequestSchema } from "@/lib/validation";
 
 /**
- * POST /ocr — Perform OCR on an image. Requires API Key authentication.
+ * POST /vision — Perform computer vision scene description. Requires API Key.
  */
 export async function POST(req: Request) {
   const start = Date.now();
@@ -25,14 +25,20 @@ export async function POST(req: Request) {
 
   try {
     const json = rawBody ? JSON.parse(rawBody) : {};
-    const parsed = ocrRequestSchema.safeParse(json);
+    const parsed = visionRequestSchema.safeParse(json);
     if (!parsed.success) {
       statusCode = 400;
       errorDetail = "Invalid request format";
       responseBody = { error: "invalid_request", detail: parsed.error.flatten().fieldErrors };
     } else {
-      const result = await runOCR(parsed.data.image);
-      responseBody = { text: result.text };
+      const result = await runVisionDescribe(parsed.data.image, parsed.data.simplified);
+      if ("error" in result && result.error) {
+        statusCode = 503;
+        errorDetail = result.error.detail;
+        responseBody = result;
+      } else {
+        responseBody = result;
+      }
     }
   } catch (err) {
     statusCode = 500;
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
   await RequestLog.create({
     project: auth.project._id,
     api_key: auth.apiKeyId,
-    endpoint: "/ocr",
+    endpoint: "/vision",
     method: "POST",
     status_code: statusCode,
     latency_ms,

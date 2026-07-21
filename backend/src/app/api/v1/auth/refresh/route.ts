@@ -3,8 +3,7 @@ import { verifyRefreshToken, signAccessToken } from "@/lib/jwt";
 import { refreshSchema, parseJsonBody } from "@/lib/validation";
 
 /**
- * POST /v1/auth/refresh
- * Exchanges a valid refresh token for a new access token. Section 08.
+ * POST /auth/refresh — Exchange a valid refresh token for a new access token.
  */
 export async function POST(req: Request) {
   try {
@@ -13,7 +12,7 @@ export async function POST(req: Request) {
 
     const payload = verifyRefreshToken(parsed.data.refresh_token);
     return NextResponse.json({
-      access_token: signAccessToken({ sub: payload.sub, email: payload.email, role: payload.role }),
+      access_token: signAccessToken({ sub: payload.sub, email: payload.email }),
       token_type: "bearer",
     });
   } catch {

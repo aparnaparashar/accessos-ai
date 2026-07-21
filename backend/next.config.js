@@ -1,18 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Every route under src/app/api/* implements the routes documented in
-  // Section 08/09 of the AccessOS AI Product & Technical Overview.
-
-  // The Angular frontend (and the proxy.conf.json / nginx.conf in prod) call
-  // /v1/* and /health* directly — but Next.js App Router mounts everything
-  // under src/app/api/*, so the actual handlers live at /api/v1/* and
-  // /api/health/*. These rewrites bridge the gap transparently.
+  // Bridges public specs routes to Next.js App Router endpoints under src/app/api/*
   async rewrites() {
     return [
       { source: "/v1/:path*", destination: "/api/v1/:path*" },
       { source: "/health/:path*", destination: "/api/health/:path*" },
       { source: "/health", destination: "/api/health" },
+      { source: "/ocr", destination: "/api/v1/ocr" },
+      { source: "/vision", destination: "/api/v1/vision" },
+      { source: "/simplify", destination: "/api/v1/simplify" },
+      { source: "/accessibility", destination: "/api/v1/accessibility" },
+      { source: "/sign-language", destination: "/api/v1/sign-language" },
+      { source: "/demo/:path*", destination: "/api/v1/demo/:path*" },
+      { source: "/projects/:path*", destination: "/api/v1/projects/:path*" },
+      { source: "/projects", destination: "/api/v1/projects" },
+      { source: "/developer/:path*", destination: "/api/v1/developer/:path*" },
+      { source: "/auth/:path*", destination: "/api/v1/auth/:path*" },
     ];
   },
 };

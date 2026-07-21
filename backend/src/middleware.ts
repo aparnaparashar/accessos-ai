@@ -1,27 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 
 /**
- * Production hardening (Section 14): security response headers applied to
- * every response from this service. CSP is deliberately conservative since
- * this backend serves a JSON API, not markup.
- *
- * CORS (bug fix): this backend (localhost:8000) and the Angular frontend
- * (localhost:4200) are different origins, so the browser needs an explicit
- * Access-Control-Allow-* response on every /api/* call, plus a successful
- * answer to its OPTIONS preflight before it will send the real request
- * (this matters for anything with a JSON body or an Authorization header,
- * which is almost every route here). Previously this file only set security
- * headers and never touched CORS or OPTIONS at all, so the browser blocked
- * every direct call from the dev server before it ever reached a route
- * handler — the actual error in the browser console was of the form
- * "No 'Access-Control-Allow-Origin' header is present on the requested
- * resource" for every /v1/* request.
- *
- * ALLOWED_ORIGINS (comma-separated) controls which origins are echoed back
- * in Access-Control-Allow-Origin; defaults to the Angular dev server so
- * local dev works out of the box even without a .env file.
+ * Production hardening: CORS & security response headers applied to every response.
  */
-const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:4200", "http://127.0.0.1:4200"];
+const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:4200", "http://127.0.0.1:4200", "http://localhost:3000"];
 
 function allowedOrigins(): string[] {
   const configured = process.env.ALLOWED_ORIGINS;
@@ -60,11 +42,6 @@ function applySecurityHeaders(res: NextResponse) {
 }
 
 export function middleware(req: NextRequest) {
-  // Preflight: the browser sends OPTIONS before any cross-origin request
-  // that carries a JSON body or custom header (Authorization, etc). Route
-  // handlers below never define an OPTIONS export, so without this early
-  // return Next would fall through to a 405 and the browser would treat
-  // that as a CORS failure and never send the real request at all.
   if (req.method === "OPTIONS") {
     const res = new NextResponse(null, { status: 204 });
     return applySecurityHeaders(applyCors(req, res));
@@ -75,8 +52,20 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Next.js runs middleware BEFORE rewrites, so we must match both the
-  // original paths the frontend uses (/v1/*, /health*) AND the canonical
-  // /api/* paths for any caller that hits the Next.js routes directly.
-  matcher: ["/api/:path*", "/v1/:path*", "/health/:path*", "/health"],
+  matcher: [
+    "/api/:path*",
+    "/v1/:path*",
+    "/health/:path*",
+    "/health",
+    "/ocr",
+    "/vision",
+    "/simplify",
+    "/accessibility",
+    "/sign-language",
+    "/demo/:path*",
+    "/projects/:path*",
+    "/projects",
+    "/developer/:path*",
+    "/auth/:path*",
+  ],
 };
