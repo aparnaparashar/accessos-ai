@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#e2e2e2",
+                        "primary": "#ffffff",
+                        "inverse-surface": "#e5e1e4",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-primary": "#2f3131",
+                        "on-tertiary-fixed": "#1b1b1e",
+                        "secondary-fixed-dim": "#c6c6cf",
+                        "on-tertiary-container": "#656467",
+                        "tertiary-fixed": "#e4e1e5",
+                        "primary-container": "#e2e2e2",
+                        "outline-variant": "#444748",
+                        "on-background": "#e5e1e4",
+                        "on-surface": "#e5e1e4",
+                        "surface-bright": "#39393b",
+                        "on-primary-fixed": "#1a1c1c",
+                        "inverse-primary": "#5d5f5f",
+                        "background": "#131315",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#e4e1e5",
+                        "on-tertiary-fixed-variant": "#47464a",
+                        "on-secondary-fixed-variant": "#45464e",
+                        "surface-container-low": "#1c1b1d",
+                        "surface-container-lowest": "#0e0e10",
+                        "surface-container-highest": "#353437",
+                        "outline": "#8e9192",
+                        "secondary": "#c6c6cf",
+                        "surface-container-high": "#2a2a2c",
+                        "on-secondary": "#2f3037",
+                        "surface-tint": "#c6c6c7",
+                        "secondary-fixed": "#e2e1eb",
+                        "on-primary-container": "#636565",
+                        "surface-container": "#201f22",
+                        "on-secondary-container": "#b4b4bd",
+                        "tertiary": "#ffffff",
+                        "surface": "#131315",
+                        "surface-variant": "#353437",
+                        "on-primary-fixed-variant": "#454747",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#313032",
+                        "tertiary-fixed-dim": "#c8c6c9",
+                        "secondary-container": "#45464e",
+                        "surface-dim": "#131315",
+                        "on-secondary-fixed": "#1a1b22",
+                        "on-tertiary": "#303033"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "80px",
+                        "section-gap": "120px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-xl": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "label-caps": ["JetBrains Mono"],
+                        "code-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-sm": ["13px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "headline-xl": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "headline-md": ["32px", {"lineHeight": "1.2", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.15em", "fontWeight": "500"}],
+                        "display-xl": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    }catch(_e){}</script>
+<style>
+    .vibrant-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    }
+    .vibrant-border {
+        position: relative;
+    }
+    .vibrant-border::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+        z-index: -1;
+        border-radius: inherit;
+    }
+    .card-hover:hover {
+        transform: translateY(-4px);
+        border-color: rgba(168, 85, 247, 0.3);
+    }
+    .nav-blur {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+    }
+    .endpoint-card.active {
+        border-color: #6366f1;
+        background-color: rgba(99, 102, 241, 0.05);
+    }
+    .endpoint-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .endpoint-card:hover:not(.active) {
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    #code-display {
+        transition: opacity 0.3s ease;
+    }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary/30">
+<header class="sticky top-0 z-50 w-full border-b border-white/5 bg-surface/80 nav-blur">
+<nav class="flex justify-between items-center w-full px-8 py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<a class="flex items-center gap-3" href="#">
+<img alt="Accessos-AI" class="h-10 w-10 object-contain brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGFIoVRjzoHTGezw4Zz3b_4EXoDZRmuRSfONlzIBRiydzqTdJhwS_-1yVGNb_t0SN6_Mo-YxWhMbKo3MU8cquXjog1eH4hkHFsdtJu-APsrUAtOriEYcfGAPQBxJP-8IluhEkPHD4qB8nepmCmQY6a-_X01SVDLogLiOPg8yvY6yMXa9oRuW1qSMI2E_3UmppTlHAFylBwU7fkrnwls4JmIokfahYbazN929H_KtthasJmWsEwnDmW6xh4tfFoW6KAOO_G8GOX3Lw"/>
+<span class="font-headline-lg text-2xl font-medium text-primary tracking-tighter">Accessos-AI</span>
+</a>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors" href="#">Features</a>
+<a class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors" href="#">Company</a>
+<a class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors" href="#">Resources</a>
+<a class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors" href="#">Docs</a>
+<a class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors" href="#">Pricing</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="font-body-md text-[14px] text-on-surface-variant hover:text-on-surface transition-colors px-4">Login</button>
+<button class="vibrant-gradient text-white px-6 py-2 rounded font-medium text-[14px] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-indigo-500/10">Get Started</button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-40 bg-surface">
+<div class="max-w-container-max mx-auto px-8 lg:flex items-center gap-16">
+<div class="flex-1 text-left mb-16 lg:mb-0">
+<div class="inline-flex items-center gap-2 mb-10 text-on-surface-variant">
+<span class="font-label-caps text-label-caps tracking-[0.2em] uppercase text-indigo-400">DEVELOPER-FIRST INTELLIGENCE</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-8 hero-title max-w-2xl italic font-medium">
+                        Architecting the Future of AI.
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-xl">
+                        The most reliable way to integrate agentic intelligence into your production environment. Scalable, secure, and developer-first.
+                    </p>
+<div class="flex flex-col sm:flex-row items-center gap-5">
+<button class="w-full sm:w-auto vibrant-gradient text-white px-10 py-5 rounded font-medium text-lg hover:brightness-110 transition-all active:scale-95 shadow-xl shadow-indigo-500/20">Schedule a Consultation</button>
+<button class="w-full sm:w-auto border border-white/20 bg-transparent text-on-surface px-10 py-5 rounded font-medium text-lg hover:bg-white/5 transition-all active:scale-95">View Documentation</button>
+</div>
+</div>
+<div class="flex-1 w-full lg:max-w-xl">
+<div class="code-window bg-surface-container-lowest rounded-lg overflow-hidden border border-white/10 vibrant-border">
+<div class="flex items-center gap-2 px-6 py-4 bg-surface-container-low border-b border-white/5">
+<div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div class="w-3 h-3 rounded-full bg-[#27C93F]"></div></div>
+</div>
+<div class="p-8 font-code-sm text-[14px] leading-relaxed">
+<pre class="text-on-surface-variant"><code><span class="text-white">import</span> { AccessosAgent } <span class="text-white">from</span> <span class="text-on-surface-variant opacity-60">'@accessos/core'</span>;
+
+<span class="text-white">const</span> agent = <span class="text-white">new</span> AccessosAgent({
+  identity: <span class="text-on-surface-variant opacity-60">'enterprise-architect'</span>,
+  capabilities: [<span class="text-on-surface-variant opacity-60">'workflow_automation'</span>, <span class="text-on-surface-variant opacity-60">'data_synthesis'</span>],
+  security: <span class="text-on-surface-variant opacity-60">'hardened'</span>
+});
+
+<span class="text-white">await</span> agent.initiateWorkflow(<span class="text-on-surface-variant opacity-60">'optimize-pipeline'</span>);</code></pre>
+</div>
+</div>
+<div class="mt-4 flex justify-end">
+<span class="bg-surface-container-high text-[10px] text-on-surface-variant font-label-caps uppercase tracking-widest px-2 py-1 rounded">Preview</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof -->
+<section class="py-16 bg-surface-container-lowest border-y border-white/5">
+<div class="max-w-container-max mx-auto px-8">
+<p class="text-center font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.25em] mb-12 opacity-60">Powering the next generation of intelligent products</p>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 items-center opacity-30 invert brightness-200 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+<div class="flex justify-center h-6"><img alt="Partner 1" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZQuo9cUjXmi80Jr1LcjnLOCgzH4Ia8zzdfmugEd4t9BQzIe6yi4WQKNxlfZvJqngZyUo6HfHvKRtd8biGPIUzI4q42xvuk2zViy5c-66E3-LbmbwK_PmCFufZrv-D9811ICjYJ0kIfYHeCEptTrDqOpY8DOKT3NUeip-xPycmI-LfYnX0LxVsujX_eKCtUmBt9As7b6F_geK4pT207pNwx1zYUWTscWTQUAz7vPA_WnARMtN-Mwz8wrZnWwdPuxFlcuyk_wFX3yw"/></div>
+<div class="flex justify-center h-6"><img alt="Partner 2" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSv0ysAUDHPZzXyxfbz4bL-cP-8ueA_06cPvAd7GSAuNdpVb55ARtn_yV7zLRCUPeEItTuOZV2wHkTeXP2TtpgVI39XnYKaTjh6mvQ1iHCNYCIFjZFBb25uOvfgE4RTttyZVLpMIOGdHkcPk_nbAq4nUED39_BEf2O1SR1Uki5M0dCtyA3YnzyEXjAoP6sAKaLs-iH03_GCzg7wLXXLXcAatkzMeo7iOWvaNs3eFZzA2zAlWOiFjYEqjGYrggpE4jDvvl0htklXuI"/></div>
+<div class="flex justify-center h-6"><img alt="Partner 3" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBbdykdM381BkPaGShyx0JDzYkdpakkXvZ5IKD5QUEKsjZmYUZ4XT7ZU_uFzz32iuIg6kfWPzMg1JuZtGdll-lheySzwLDyVUK-V1IFgZ5uSVJQ6SdHxZ4tGcPa1D6R0fuPpo5fr3Ck-pzWOsEML4Hco84u7GQEo3LHF0aMHzD71lqWS0AP2wtXULnC4UA_dKlgCTauqmVxice5-ktdRXbjmcTsyMsI6ZeGR01cMEvNG_M3TA7Z5P27TQKNhluth2H7de9FzPMwUE"/></div>
+<div class="flex justify-center h-6"><img alt="Partner 4" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0T4GaqSkMdehBaC0TyHmWkLkLAxOLmFQ-miswEXw5dmG9eRleU32jC452igoZa_deOyej0tozORirvx5bVPLW4Olmmpgd2RY-1qtu5Ki5r3jCytTPqFnGKyquXvXru2Slk8nhiwBdyvoqieTfC5aweKd6G_Y3RpLD68Tl7RC2HvSq7BQpVmnyPtI-POrgrPEPMFodJSuRIL2zAuCjOvJRJkMcZgtHtMbDp4g0aclk1nqLEU6Q2kdSFsBbwXv-X50yuw44iD7KN4Y"/></div>
+<div class="flex justify-center h-6"><img alt="Partner 5" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXFvX_X_2F1aGtiK2kxBx4Xvt9Ypn_twtgbmlKgqvGeAArtQr60WsJnhuymlsWblPSSenupdH4V6SdIQoKorkqfZDNktRrfeINeep_9hZI_xgy7k3UhT2StBQ2VB4Ry2nPPP9a_9G7btJzmX_x3K98--GuaFjIcSO8extn7e_c-1zA2mrRtKjf9X1NdwoSpG3EypKqFi89yrMhEDQr3P9tCREY2YsxmSRKg-dP1FS0PirY8XkR3Z71Dq59wyWkKDFDvkodXZWnujA"/></div>
+<div class="flex justify-center h-6"><img alt="Partner 6" class="h-full w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2UrB-RMN8dUNc1feoYtJmewVVIv_FSOTEIeIf0XM49YxTItctD7m86Eta6RqIw5PANzxPGu-09XyQzPWgfrCLEzY2iHhXw8BucCVCOaxXRGK0RaOjR8gvKLoEEVTv9AX9BCcAPbhTlldAB4cl4ym-x2Kka8thu1AC8YPvp6DgOV3SZ1Iwx_qZvQWvAOHWCis7EXj-DCEel3RZPcUZDxwsP92kKWyIjLxwdPcDH8S2PGoydBpGRlWzrNmBf9_I66SmHG1Ue7scBeo"/></div>
+</div>
+</div>
+</section>
+<!-- Operational Metrics -->
+<section class="py-24 bg-surface">
+<div class="max-w-container-max mx-auto px-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="text-center p-12 bg-surface-container-low rounded border border-white/5 vibrant-border">
+<p class="text-label-caps font-label-caps text-indigo-400/60 uppercase tracking-widest mb-6">SYSTEM OPERATIONAL</p>
+<p class="text-headline-xl font-headline-xl text-primary">99.8%</p>
+</div>
+<div class="text-center p-12 bg-surface-container-low rounded border border-white/5 vibrant-border">
+<p class="text-label-caps font-label-caps text-indigo-400/60 uppercase tracking-widest mb-6">PROCESSING LATENCY</p>
+<p class="text-headline-xl font-headline-xl text-on-surface">12ms</p>
+</div>
+<div class="text-center p-12 bg-surface-container-low rounded border border-white/5 vibrant-border">
+<p class="text-label-caps font-label-caps text-indigo-400/60 uppercase tracking-widest mb-6">SUCCESS RATE</p>
+<p class="text-headline-xl font-headline-xl text-on-surface">99.99%</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Premium Intelligence Header -->
+<section class="pt-24 pb-12 bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-8 text-center">
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-6 italic">Premium Intelligence, Delivered.</h2>
+<p class="font-body-md text-xl text-on-surface-variant max-w-2xl mx-auto opacity-80">Engineered for teams that demand zero compromise on speed, reliability, and security.</p>
+</div>
+</section>
+<!-- Architectural Excellence -->
+<section class="pb-section-gap bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-8">
+<div class="mb-16">
+<h2 class="font-headline-lg text-4xl md:text-5xl text-on-surface mb-6">Architectural Excellence</h2>
+<p class="font-body-md text-lg text-on-surface-variant max-w-2xl opacity-70">We don't just build features; we design intelligent systems that evolve with your business needs.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Custom AI Agents -->
+<div class="md:col-span-7 bg-surface-container-low p-10 rounded border border-white/5 flex flex-col transition-all duration-300 card-hover vibrant-border">
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">smart_toy</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Custom AI Agents</h3>
+<p class="font-body-md text-on-surface-variant mb-10 text-lg opacity-80">Autonomous agents that handle complex, multi-step business logic with unparalleled precision and context-awareness.</p>
+<div class="mt-auto h-48 bg-surface-container-highest/10 rounded border border-white/5 relative overflow-hidden">
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-[80%] space-y-4 opacity-5">
+<div class="h-1 w-full bg-indigo-500"></div>
+<div class="h-1 w-2/3 bg-indigo-500"></div>
+<div class="h-1 w-1/2 bg-indigo-500"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Workflow Automation -->
+<div class="md:col-span-5 bg-surface-container-low p-10 rounded border border-white/5 flex flex-col transition-all duration-300 card-hover vibrant-border">
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">hub</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Workflow Automation</h3>
+<p class="font-body-md text-on-surface-variant mb-10 text-lg opacity-80">Bridge the gap between legacy tools and modern AI intelligence through robust API orchestration.</p>
+<a class="mt-auto inline-flex items-center gap-2 font-label-caps text-label-caps text-indigo-400 hover:text-indigo-300 transition-colors group" href="#">
+                            LEARN MORE <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<!-- Strategy Consulting -->
+<div class="md:col-span-4 bg-surface-container-low p-10 rounded border border-white/5 flex flex-col transition-all duration-300 card-hover vibrant-border">
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">architecture</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Strategy Consulting</h3>
+<p class="font-body-md text-on-surface-variant text-lg opacity-80">Navigate the AI landscape with confidence. We provide technical roadmaps that prioritize long-term ROI.</p>
+</div>
+<!-- Hardened Security -->
+<div class="md:col-span-8 bg-surface-container-low p-10 rounded border border-white/5 flex flex-col md:flex-row gap-8 transition-all duration-300 card-hover vibrant-border">
+<div class="flex-1">
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">shield_lock</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Hardened Security</h3>
+<p class="font-body-md text-on-surface-variant text-lg opacity-80">Enterprise-grade safety protocols for LLM deployment, ensuring your data never leaves the architectural perimeter.</p>
+</div>
+<div class="flex-1 h-full min-h-[160px] bg-surface-container-highest/10 rounded border border-white/5 flex flex-col justify-center p-6 gap-3">
+<div class="w-3/4 h-1 bg-indigo-500/10"></div>
+<div class="w-full h-1 bg-indigo-500/10"></div>
+<div class="w-1/2 h-1 bg-indigo-500/10"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Proof -->
+<section class="py-24 bg-surface border-t border-white/5">
+<div class="max-w-container-max mx-auto px-8">
+<div class="bento-grid">
+<div class="col-span-12 md:col-span-8 bg-surface-container-low p-10 rounded border border-white/5 card-hover transition-all duration-300 vibrant-border">
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">bolt</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Ultra Low Latency</h3>
+<p class="font-body-md text-on-surface-variant mb-10 text-lg opacity-80">Our global inference network ensures your agents respond in sub-100ms. Distributed across 24 regions to keep your data close to your users.</p>
+<div class="h-64 rounded overflow-hidden relative border border-white/5">
+<img alt="Global server nodes visualization" class="w-full h-full object-cover opacity-20 mix-blend-screen grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA33uaCY7_BUhZNuySoLbCH011A5ngH4Nf020g34UPpj_h-O2ZigAfko7YmIiHP17Oj2-dtTAFpXnHiQuxbTag3ZUxWoBNq4jO_zS9yrLFgaE71vq1ePLQ_h1N-CPMc9BZCVYuujuScBmdmO6GQwKuSecAa1dhIhTJm_zk56PySEn82Lm0juwelNQkXrykheGZ-k_mOuvFtRiJJKRlShybJUeW_I12A102gqdiThsmJswQ1yRKINOUxfRqaB-VXRZdFxMCKPa-FgVs"/>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-highest p-10 rounded border border-white/5 flex flex-col justify-between vibrant-border">
+<div>
+<div class="w-12 h-12 bg-indigo-500/10 rounded flex items-center justify-center mb-8">
+<span class="material-symbols-outlined text-indigo-400">shield</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Enterprise Compliance</h3>
+<p class="font-body-md text-on-surface-variant opacity-80">SOC2 Type II, HIPAA, and GDPR compliant. Your data is encrypted at rest and in transit with your own keys.</p>
+</div>
+<div class="mt-12">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest opacity-60">Active Protection</span>
+<div class="mt-4 flex gap-1">
+<div class="w-full h-1 bg-indigo-500"></div>
+<div class="w-full h-1 bg-indigo-500"></div>
+<div class="w-full h-1 bg-white/10"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial Section -->
+<section class="py-32 bg-surface">
+<div class="max-w-container-max mx-auto px-8 text-center">
+<div class="max-w-4xl mx-auto">
+<span class="material-symbols-outlined text-indigo-500/10 text-[80px] mb-12 select-none">format_quote</span>
+<blockquote class="font-headline-xl text-headline-lg md:text-headline-xl text-on-surface mb-12 leading-tight italic font-medium">
+                        "Accessos-AI transformed our approach to automation. They didn't just give us a tool; they gave us an intelligent architecture that scales with our ambition."
+                    </blockquote>
+<div class="flex flex-col items-center">
+<div class="w-12 h-0.5 vibrant-gradient mb-6"></div>
+<p class="font-medium text-2xl text-on-surface mb-1">Eleanor Vance</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.2em] opacity-60">CTO, STRATOS GLOBAL</p>
+</div>
+</div>
+</div>
+</section>
+<!-- API Endpoints Section -->
+<section class="py-24 bg-surface-container-lowest border-t border-white/5">
+<div class="max-w-container-max mx-auto px-8">
+<div class="text-center mb-16">
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-6 italic">An API endpoint for any use case</h2>
+<p class="font-body-md text-lg text-on-surface-variant max-w-3xl mx-auto opacity-70">
+                Do more with your emails using flexible API endpoints. Send attachments, schedule using natural language, or trigger batch emails with ease.
+            </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- Left: Interactive Cards -->
+<div class="lg:col-span-5 space-y-4">
+<div class="endpoint-card p-6 rounded-lg border border-white/10 bg-surface flex items-center justify-between group" id="card-schedule" onclick="updateSnippet('schedule')">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-on-surface-variant group-hover:text-indigo-400 transition-colors">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<span class="font-medium text-lg text-on-surface">Schedule email</span>
+</div>
+</div>
+<div class="endpoint-card p-6 rounded-lg border border-white/10 bg-surface flex items-center justify-between group" id="card-batch" onclick="updateSnippet('batch')">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-on-surface-variant group-hover:text-indigo-400 transition-colors">
+<span class="material-symbols-outlined">stacked_email</span>
+</div>
+<span class="font-medium text-lg text-on-surface">Batch emails</span>
+</div>
+</div>
+<div class="endpoint-card active p-6 rounded-lg border border-white/10 bg-surface flex items-center justify-between group" id="card-attachment" onclick="updateSnippet('attachment')">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-on-surface-variant group-hover:text-indigo-400 transition-colors">
+<span class="material-symbols-outlined">attachment</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium text-lg text-on-surface">Send attachment</span>
+<p class="text-sm text-on-surface-variant mt-1 opacity-70">Process files from a remote file or upload a local file using Base64.</p>
+</div>
+</div>
+<span class="text-[10px] font-label-caps bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded">POST</span>
+</div>
+</div>
+<!-- Right: Code Window -->
+<div class="lg:col-span-7">
+<div class="code-window bg-[#0D0D0D] rounded-lg overflow-hidden border border-white/10 shadow-2xl">
+<div class="flex items-center justify-between px-6 py-4 bg-white/5 border-b border-white/5">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+<div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+<div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[11px] font-label-caps text-on-surface-variant opacity-60">PHP</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant opacity-60">expand_more</span>
+</div>
+</div>
+<div class="p-8 font-code-sm text-[14px] leading-relaxed min-h-[400px] overflow-x-auto">
+<pre class="text-on-surface-variant" id="code-display"><code>$resend = Resend::<span class="text-white">client</span>(<span class="text-indigo-400">'re_xxxxxxxxx'</span>);
+
+$resend-&gt;emails-&gt;<span class="text-white">send</span>([
+  <span class="text-indigo-400">'from'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Acme &lt;onboarding@resend.dev&gt;'</span>,
+  <span class="text-indigo-400">'to'</span> =&gt; [<span class="text-on-surface-variant opacity-60">'delivered@resend.dev'</span>],
+  <span class="text-indigo-400">'subject'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Receipt for your payment'</span>,
+  <span class="text-indigo-400">'html'</span> =&gt; <span class="text-on-surface-variant opacity-60">'&lt;p&gt;Thanks for the payment&lt;/p&gt;'</span>,
+  <span class="text-indigo-400">'attachments'</span> =&gt; [
+    [
+      <span class="text-indigo-400">'path'</span> =&gt; <span class="text-on-surface-variant opacity-60">'https://resend.com/static/sample/invoice.pdf'</span>,
+      <span class="text-indigo-400">'filename'</span> =&gt; <span class="text-on-surface-variant opacity-60">'invoice.pdf'</span>
+    ]
+  ]
+]);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-16 flex justify-center gap-8">
+<button class="font-body-md text-on-surface hover:text-indigo-400 transition-colors flex items-center gap-2 border border-white/10 px-6 py-3 rounded-lg bg-white/5">
+                See API Docs <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+<button class="font-body-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-2 px-6 py-3">
+                Get API key <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<script>
+    const snippets = {
+        schedule: `$resend = Resend::<span class="text-white">client</span>(<span class="text-indigo-400">'re_xxxxxxxxx'</span>);
+
+$resend-&gt;emails-&gt;<span class="text-white">send</span>([
+  <span class="text-indigo-400">'from'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Acme &lt;onboarding@resend.dev&gt;'</span>,
+  <span class="text-indigo-400">'to'</span> =&gt; [<span class="text-on-surface-variant opacity-60">'delivered@resend.dev'</span>],
+  <span class="text-indigo-400">'subject'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Scheduled Event'</span>,
+  <span class="text-indigo-400">'scheduled_at'</span> =&gt; <span class="text-on-surface-variant opacity-60">'in 2 days'</span>,
+  <span class="text-indigo-400">'html'</span> =&gt; <span class="text-on-surface-variant opacity-60">'&lt;p&gt;Wait for it...&lt;/p&gt;'</span>
+]);`,
+        batch: `$resend = Resend::<span class="text-white">client</span>(<span class="text-indigo-400">'re_xxxxxxxxx'</span>);
+
+$resend-&gt;batch-&gt;<span class="text-white">send</span>([
+  [
+    <span class="text-indigo-400">'from'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Acme &lt;onboarding@resend.dev&gt;'</span>,
+    <span class="text-indigo-400">'to'</span> =&gt; <span class="text-on-surface-variant opacity-60">'user1@example.com'</span>,
+    <span class="text-indigo-400">'subject'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Hello One'</span>
+  ],
+  [
+    <span class="text-indigo-400">'from'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Acme &lt;onboarding@resend.dev&gt;'</span>,
+    <span class="text-indigo-400">'to'</span> =&gt; <span class="text-on-surface-variant opacity-60">'user2@example.com'</span>,
+    <span class="text-indigo-400">'subject'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Hello Two'</span>
+  ]
+]);`,
+        attachment: `$resend = Resend::<span class="text-white">client</span>(<span class="text-indigo-400">'re_xxxxxxxxx'</span>);
+
+$resend-&gt;emails-&gt;<span class="text-white">send</span>([
+  <span class="text-indigo-400">'from'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Acme &lt;onboarding@resend.dev&gt;'</span>,
+  <span class="text-indigo-400">'to'</span> =&gt; [<span class="text-on-surface-variant opacity-60">'delivered@resend.dev'</span>],
+  <span class="text-indigo-400">'subject'</span> =&gt; <span class="text-on-surface-variant opacity-60">'Receipt for your payment'</span>,
+  <span class="text-indigo-400">'html'</span> =&gt; <span class="text-on-surface-variant opacity-60">'&lt;p&gt;Thanks for the payment&lt;/p&gt;'</span>,
+  <span class="text-indigo-400">'attachments'</span> =&gt; [
+    [
+      <span class="text-indigo-400">'path'</span> =&gt; <span class="text-on-surface-variant opacity-60">'https://resend.com/static/sample/invoice.pdf'</span>,
+      <span class="text-indigo-400">'filename'</span> =&gt; <span class="text-on-surface-variant opacity-60">'invoice.pdf'</span>
+    ]
+  ]
+]);`
+    };
+
+    function updateSnippet(key) {
+        const display = document.getElementById('code-display').querySelector('code');
+        const cards = document.querySelectorAll('.endpoint-card');
+        
+        // Update Active States
+        cards.forEach(card => {
+            card.classList.remove('active');
+            const badge = card.querySelector('.font-label-caps');
+            if (badge) badge.remove();
+            const desc = card.querySelector('p');
+            if (desc) desc.remove();
+        });
+        
+        const activeCard = document.getElementById('card-' + key);
+        activeCard.classList.add('active');
+        
+        // Add Badge
+        const badge = document.createElement('span');
+        badge.className = 'text-[10px] font-label-caps bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded';
+        badge.innerText = 'POST';
+        activeCard.appendChild(badge);
+        
+        // Transition code
+        const codeWindow = document.getElementById('code-display');
+        codeWindow.style.opacity = '0';
+        
+        setTimeout(() => {
+            display.innerHTML = snippets[key];
+            codeWindow.style.opacity = '1';
+        }, 200);
+    }
+</script>
+<!-- Partnership Models -->
+<section class="py-section-gap bg-surface-container-lowest border-t border-white/5">
+<div class="max-w-container-max mx-auto px-8">
+<div class="text-center mb-20">
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-6 italic">Partnership Models</h2>
+<p class="font-body-md text-lg text-on-surface-variant max-w-2xl mx-auto opacity-70">Choose the engagement structure that aligns with your technical scale.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
+<!-- Tier 1 -->
+<div class="pricing-card bg-surface p-10 rounded border border-white/10 flex flex-col transition-all duration-500 shadow-xl vibrant-border">
+<h4 class="font-medium text-2xl text-on-surface mb-3">Strategic Review</h4>
+<p class="font-body-md text-on-surface-variant mb-10 text-[14px]">For teams exploring AI potential.</p>
+<div class="mb-10">
+<span class="text-4xl font-medium text-on-surface">$4,500</span>
+<span class="text-on-surface-variant font-label-caps text-[11px]">/consult</span>
+</div>
+<ul class="space-y-5 mb-12 flex-grow">
+<li class="flex items-center gap-3 font-body-md text-[14px] text-on-surface-variant">
+<span class="material-symbols-outlined text-indigo-400 text-lg opacity-40">circle</span> Architecture Roadmap
+                            </li>
+<li class="flex items-center gap-3 font-body-md text-[14px] text-on-surface-variant">
+<span class="material-symbols-outlined text-indigo-400 text-lg opacity-40">circle</span> Security Audit
+                            </li>
+</ul>
+<button class="w-full py-4 border border-white/20 rounded font-medium text-[14px] text-on-surface hover:bg-white/5 transition-colors">Book Review</button>
+</div>
+<!-- Tier 2 (Featured) -->
+<div class="pricing-card vibrant-gradient p-10 rounded flex flex-col scale-105 shadow-2xl shadow-indigo-500/20 relative z-10">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-indigo-600 text-[10px] font-label-caps uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">Most Popular</div>
+<h4 class="font-medium text-2xl text-white mb-3">Agency Retainer</h4>
+<p class="font-body-md text-white opacity-70 mb-10 text-[14px]">Embedded AI engineering team.</p>
+<div class="mb-10 text-white">
+<span class="text-4xl font-medium">$12,000</span>
+<span class="opacity-60 font-label-caps text-[11px]">/month</span>
+</div>
+<ul class="space-y-5 mb-12 flex-grow">
+<li class="flex items-center gap-3 font-body-md text-[14px] text-white">
+<span class="material-symbols-outlined text-white text-lg opacity-60">circle</span> Unlimited Agent Dev
+                            </li>
+<li class="flex items-center gap-3 font-body-md text-[14px] text-white">
+<span class="material-symbols-outlined text-white text-lg opacity-60">circle</span> 24/7 Managed Ops
+                            </li>
+<li class="flex items-center gap-3 font-body-md text-[14px] text-white">
+<span class="material-symbols-outlined text-white text-lg opacity-60">circle</span> Custom Integrations
+                            </li>
+</ul>
+<button class="w-full py-4 bg-white text-indigo-600 rounded font-medium text-[14px] hover:bg-opacity-90 transition-all shadow-md">Get Started</button>
+</div>
+<!-- Tier 3 -->
+<div class="pricing-card bg-surface p-10 rounded border border-white/10 flex flex-col transition-all duration-500 shadow-xl vibrant-border">
+<h4 class="font-medium text-2xl text-on-surface mb-3">Custom Forge</h4>
+<p class="font-body-md text-on-surface-variant mb-10 text-[14px]">One-off complex builds.</p>
+<div class="mb-10 text-on-surface">
+<span class="text-4xl font-medium">Custom</span>
+</div>
+<ul class="space-y-5 mb-12 flex-grow">
+<li class="flex items-center gap-3 font-body-md text-[14px] text-on-surface-variant">
+<span class="material-symbols-outlined text-indigo-400 text-lg opacity-40">circle</span> Custom LLM Training
+                            </li>
+<li class="flex items-center gap-3 font-body-md text-[14px] text-on-surface-variant">
+<span class="material-symbols-outlined text-indigo-400 text-lg opacity-40">circle</span> On-premise Deployment
+                            </li>
+<li class="flex items-center gap-3 font-body-md text-[14px] text-on-surface-variant">
+<span class="material-symbols-outlined text-indigo-400 text-lg opacity-40">circle</span> Dedicated Architect
+                            </li>
+</ul>
+<button class="w-full py-4 border border-white/20 rounded font-medium text-[14px] text-on-surface hover:bg-white/5 transition-colors">Contact Us</button>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-32 bg-surface text-on-surface relative overflow-hidden border-t border-white/5">
+<div class="max-w-container-max mx-auto px-8 text-center relative z-10">
+<h2 class="font-headline-xl text-5xl md:text-6xl mb-8 italic">Ready to Scale?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-14 max-w-2xl mx-auto opacity-80">Join the new era of cognitive automation. Let's build the intelligence that drives your future.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<button class="w-full sm:w-auto vibrant-gradient text-white px-12 py-5 rounded font-medium text-lg hover:brightness-110 transition-all active:scale-95 shadow-2xl shadow-indigo-500/20">Talk to an Architect</button>
+<button class="w-full sm:w-auto border border-white/20 bg-white/5 text-on-surface px-12 py-5 rounded font-medium text-lg hover:bg-white/10 transition-all active:scale-95">View Case Studies</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-white/5 py-20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-container-max mx-auto px-8 mb-20">
+<div class="col-span-1 md:col-span-2">
+<a class="flex items-center gap-3 mb-8" href="#">
+<img alt="Accessos-AI" class="h-10 w-10 object-contain brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGFIoVRjzoHTGezw4Zz3b_4EXoDZRmuRSfONlzIBRiydzqTdJhwS_-1yVGNb_t0SN6_Mo-YxWhMbKo3MU8cquXjog1eH4hkHFsdtJu-APsrUAtOriEYcfGAPQBxJP-8IluhEkPHD4qB8nepmCmQY6a-_X01SVDLogLiOPg8yvY6yMXa9oRuW1qSMI2E_3UmppTlHAFylBwU7fkrnwls4JmIokfahYbazN929H_KtthasJmWsEwnDmW6xh4tfFoW6KAOO_G8GOX3Lw"/>
+<span class="font-headline-lg text-2xl font-medium text-on-surface tracking-tighter">Accessos-AI</span>
+</a>
+<p class="font-body-md text-on-surface-variant text-[14px] mb-8 max-w-sm leading-relaxed opacity-70">
+                    AI infrastructure built for performance, reliability, and developer happiness. Architecting systems that matter.
+                </p>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-indigo-400 transition-all opacity-40 hover:opacity-100" href="#"><span class="material-symbols-outlined text-[20px]">alternate_email</span></a>
+<a class="text-on-surface-variant hover:text-indigo-400 transition-all opacity-40 hover:opacity-100" href="#"><span class="material-symbols-outlined text-[20px]">code</span></a>
+<a class="text-on-surface-variant hover:text-indigo-400 transition-all opacity-40 hover:opacity-100" href="#"><span class="material-symbols-outlined text-[20px]">rss_feed</span></a>
+</div>
+</div>
+<div>
+<h4 class="text-on-surface font-label-caps text-[11px] uppercase tracking-[0.2em] mb-8">Navigation</h4>
+<ul class="space-y-4">
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Features</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Pricing</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Docs</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">API Ref</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-on-surface font-label-caps text-[11px] uppercase tracking-[0.2em] mb-8">Connect</h4>
+<ul class="space-y-4">
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">GitHub</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Discord</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Twitter</a></li>
+<li class=""><a class="font-body-md text-[14px] text-on-surface-variant hover:text-indigo-400 transition-all opacity-70 hover:opacity-100" href="#">Privacy</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-8 pt-10 border-t border-white/5">
+<p class="font-label-caps text-[11px] text-on-surface-variant text-center opacity-40">© 2024 Accessos-AI. Built for the Architect.</p>
+</div>
+</footer>
+<script>
+        // Reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section > div, .pricing-card, .bento-grid > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-8');
+            observer.observe(el);
+        });
+
+        // Preferred color scheme check
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</body></html>

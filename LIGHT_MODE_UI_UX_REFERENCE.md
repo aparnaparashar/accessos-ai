@@ -1,87 +1,97 @@
-# UI/UX Reference: "Resend, but Light Mode"
+# UI/UX Reference: Luminous Intelligence (Light Mode)
 
-This document serves as the master blueprint for redesigning the AccessOS AI frontend. It takes the core principles of the industry's best developer experience (Resend, Stripe, Vercel) and maps them to a **premium, hyper-minimalist Light Mode** aesthetic.
-
----
-
-## 1. Core Philosophy: The Developer's Canvas
-Developers spend their lives staring at screens. Our light mode cannot be blinding; it must feel like high-quality matte paper. 
-- **Code is the Hero Image:** Stop telling developers what the product does. *Show* them the JSON payload.
-- **Micro-Interactions over Static Content:** The page must feel alive. 3D elements that track the mouse, code blocks that animate on scroll, and buttons that respond to hover with physical depth.
-- **Zero Clutter:** Every border, shadow, and line of text must earn its place. If it doesn't help the developer integrate the API faster, delete it.
+This document serves as the master blueprint for redesigning the AccessOS AI frontend. It adapts the premium, architectural design language established in the `stitch_accessos_ai_premium_landing` prototype into a **refined, highly legible Light Mode** aesthetic tailored for developers and enterprise architects.
 
 ---
 
-## 2. The "Matte Light" Color Palette
-Instead of deep blacks and neon glows (Dark Mode), we use pure whites, soft silvers, and deep slates to create contrast and hierarchy.
+## 1. Core Philosophy: Architectural Clarity
+The design system targets high-end professional tools and enterprise SaaS where clarity and authority are paramount. The emotional response is one of quiet confidence, precision, and technological sophistication.
+- **Code is the Hero Image:** Stop telling developers what the product does. *Show* them the syntax and API payloads.
+- **Editorial Elegance:** By combining high-contrast serif headlines with clean sans-serif body text and monospaced technical accents, the UI feels like a premium technical whitepaper.
+- **Structured Space:** The visual language relies on strict grid structures, intentional negative space, and tonal layering rather than heavy shadows or decorative clutter.
+
+---
+
+## 2. The "Luminous Slate" Color Palette
+We are transposing the deep "Noir" palette into a bright, airy Light Mode. We use pure whites, soft silvers, and deep slates to create contrast and hierarchy, accented by the brand's vibrant indigo-purple gradient.
 
 | Element | Token/Color | Purpose |
 |---------|-------------|---------|
-| **Background (Base)** | `#FDFDFD` (Off-white) | The primary canvas. Not `#FFFFFF` (too harsh). |
-| **Background (Panel)** | `#FFFFFF` | For floating cards and bento boxes to stand out against the base. |
-| **Text (Primary)** | `#09090B` (Zinc-950) | Near black for maximum readability on headings. |
-| **Text (Secondary)** | `#71717A` (Zinc-500) | For descriptions, meta-text, and standard paragraphs. |
-| **Borders** | `#E4E4E7` (Zinc-200) | Ultra-subtle 1px borders to define structure. |
-| **Accent (Brand)** | `#4F46E5` (Indigo-600) | For primary CTAs, active states, and code syntax highlights. |
-| **Glass Effect** | `rgba(255,255,255,0.7)` | Combined with `backdrop-filter: blur(12px)` for sticky navs. |
-
-### The "Light Glassmorphism" Shadow Strategy
-In dark mode, you use inner borders/glows to create depth. In light mode, you use **diffused drop shadows**.
-- **Resting state:** `box-shadow: 0 1px 2px rgba(0,0,0,0.05)`
-- **Hover state (Interactive Boxes):** `box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1), 0 0 0 1px var(--accent)`
+| **Background** | `#F8F9FA` (Gray-50) | The primary canvas. Slightly off-white to reduce eye strain. |
+| **Surface** | `#FFFFFF` (Pure White) | Container cards, bento boxes, and code windows. |
+| **Surface Variant** | `#F3F4F6` (Gray-100) | Secondary containers, subtle highlights, or alternate table rows. |
+| **Text (Primary)** | `#111827` (Gray-900) | Near black for maximum readability on headings and core text. |
+| **Text (Variant)** | `#4B5563` (Gray-600) | For descriptions, meta-text, and standard paragraphs. |
+| **Borders (Outline)** | `#E5E7EB` (Gray-200) | Ultra-subtle 1px borders to define structure without heavy shadows. |
+| **Accent Gradient** | `linear-gradient(135deg, #6366f1, #a855f7)` | "Vibrant Gradient" for primary CTAs and active states. |
+| **Vibrant Border** | `linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2))` | For highlighting premium features or active bento boxes. |
+| **Glass Effect** | `rgba(255, 255, 255, 0.8)` | Combined with `backdrop-filter: blur(12px)` for sticky navbars. |
 
 ---
 
 ## 3. Typography
-A developer brand needs highly legible, technical typography.
-- **Headings (Display):** Inter (or Geist) — tightly tracked (`letter-spacing: -0.02em`), bold.
-- **Body:** Inter — regular weight, spacious line-height (`1.6`).
-- **Code (Monospace):** Fira Code or JetBrains Mono — used extensively not just in code blocks, but for badges, API routes (e.g., `POST /v1/assist`), and small metadata.
+The system employs a sophisticated typographic hierarchy combining editorial serifs with technical monospaces.
+
+- **Headlines (Display & MD-XL):** *Playfair Display*
+  - The high contrast between thick and thin strokes provides a premium, editorial feel. 
+  - Weight: 500 (Medium).
+  - Tracking: Tightly tracked (`letter-spacing: -0.01em` to `-0.02em`).
+  - Styling: Large hero headlines should use *italic* emphasis on key phrases (e.g., "Architecting the Future of *AI*").
+- **Body & Small Labels:** *Inter*
+  - Provides a clean, neutral balance to the expressive headlines.
+  - Generous line-height (`1.6`) ensures readability.
+- **Technical & Code:** *JetBrains Mono*
+  - Used for code snippets, API routes, and small caps tags (`label-caps` with `letter-spacing: 0.15em`).
+  - Reinforces the "precision" and developer-first aspect of the brand.
 
 ---
 
-## 4. Visual Elements & Interactive Design
+## 4. Layout & Spacing
+The layout follows a strict architectural rhythm to emphasize the minimalist aesthetic.
 
-### 3D Objects & Motion
-Instead of flat vector illustrations, we use lightweight 3D objects (rendered via Spline or Three.js). 
-- **The Hero Visual:** A floating, slowly rotating 3D glass sphere or abstract geometric shape that reacts subtly to the user's mouse position. 
-- **Purpose:** It adds a premium, "cutting-edge tech" feel without cluttering the page.
-
-### The Bento Grid (Interactive Boxes)
-The feature section must abandon standard vertical lists. We will use a **Bento Box Grid** (as seen on Apple and Linear).
-- Each box represents a capability (e.g., Vision, OCR, Speech).
-- **Hover Effect:** When a developer hovers over a box, the background shifts slightly, the 1px border illuminates (changes from Zinc-200 to Indigo-600), and a micro-animation plays inside the box (e.g., a mock API request returning a `200 OK`).
-
-### Code Front and Center
-- **The Code Window:** A beautiful, macOS-style code window (white background, very subtle shadow) permanently positioned on the right half of the hero section.
-- **Syntax Highlighting:** A custom light-mode syntax theme. Strings are green, keywords are purple, variables are blue.
-- **Tabs:** Developers can toggle between `cURL`, `Node.js`, and `Python` right in the UI.
+- **Grid:** 12-column grid on desktop, 4-column on mobile.
+- **Container Max:** `1280px`
+- **Gutter:** `24px`
+- **Margins:** `80px` (Desktop) / `20px` (Mobile)
+- **Section Gap:** `120px` between major sections to allow the design to breathe.
+- **Base Unit:** `4px` baseline grid for consistent vertical rhythm.
 
 ---
 
-## 5. Page-by-Page Transformation
+## 5. Elevation & Shapes
+Depth is created through **Tonal Layering**, **Soft Borders**, and **Hover Micro-interactions**.
 
-### A. The Homepage (The Developer Pitch)
-- **Hero:** Left side: Massive text: "The API for Accessibility". A clean "Get API Key" primary button. Right side: The interactive code window showing a live `POST` request to our endpoint.
-- **Social Proof:** Grayscale logos of trusted companies directly below the hero.
-- **Bento Features:** A grid showing "One API. Total Scene Understanding." Boxes for specific ML capabilities.
-- **Performance:** A section dedicated purely to latency (`< 200ms response time`) and edge routing.
+### Border Radius
+The shape language is "Soft-Geometric."
+- **Small components (buttons, inputs, chips):** `0.25rem` (4px) to feel precise and sharp.
+- **Standard Cards & Containers:** `0.5rem` (8px).
+- **Large UI Panels (Code Windows):** `0.75rem` (12px).
+- **Pills/Badges:** `full` (9999px) only for small utility chips.
 
-### B. The Developer Dashboard (The App)
-This is the only logged-in experience. It must look like a high-end CLI tool brought to the web.
-- **Navigation:** Left sidebar, clean icons. `Overview`, `API Keys`, `Logs`, `Webhooks`, `Billing`.
-- **API Keys Page:** 
-  - Keys are blurred until clicked. 
-  - "Copy to clipboard" buttons everywhere.
-- **Logs Page:** A dense, paginated table showing every request. Clicking a row opens a drawer showing the raw JSON request headers, body, and the response.
-
-### C. Documentation (The Guide)
-- Three-column layout: Navigation (Left), Content (Center), Dynamic Code Snippets (Right).
-- **Sticky Code:** As you scroll down the explanation of an endpoint on the left, the code snippet on the right automatically updates to match the context.
+### Shadows & Hover States (Light Mode specific)
+Instead of heavy dark shadows, light mode relies on crisp borders and very diffused drop shadows.
+- **Cards (Resting):** `border: 1px solid #E5E7EB`, Background `#FFFFFF`. No drop shadow.
+- **Cards (Hover):** `transform: translateY(-4px)`, `box-shadow: 0 10px 30px -10px rgba(99,102,241,0.1)`, `border-color: rgba(168,85,247,0.3)`.
+- **Primary Buttons:** Vibrant Gradient background with a subtle colored shadow: `box-shadow: 0 10px 15px -3px rgba(99,102,241,0.2)`. On active/click: `transform: scale(0.95)`.
 
 ---
 
-## 6. Execution Rules
-1. **Never use generic placeholder images.** If you need a visual, use a code snippet or a 3D primitive.
-2. **Padding is sacred.** Double the padding you think you need. Breathing room is what makes light mode look expensive.
-3. **Interactive feedback.** Every button, link, and interactive card must have a `<100ms` transition state (color change, scale shift, or shadow pop).
+## 6. Component Execution
+
+### The Code Window
+- **Container:** Background `#0D0D0D` (keep the code window dark for syntax contrast, creating a striking focal point against the light mode background), or a very crisp `#FFFFFF` with Light-mode syntax highlighting. (Prefer dark terminal windows on light backgrounds for that "developer tool" aesthetic).
+- **Header:** Mac-style traffic lights (`#FF5F56`, `#FFBD2E`, `#27C93F`), JetBrains Mono labels.
+
+### Bento Grid (Features & Endpoints)
+- 12-column grid where cards span varying widths (e.g., 8-col and 4-col).
+- **Endpoint Cards:** Interactive side-nav cards. When clicked/active, they receive the vibrant border highlight and a subtle background tint (`rgba(99,102,241,0.05)`).
+- Icons utilize `Material Symbols Outlined` in the accent indigo color inside a soft tinted square (`bg-indigo-500/10`).
+
+### Buttons
+- **Primary:** `.vibrant-gradient` with white Inter-Medium text.
+- **Secondary:** Transparent background, `1px solid #E5E7EB` border, text `#111827`. Hover state changes background to `#F3F4F6`.
+
+### Navigation
+- Sticky top header.
+- Background: `rgba(255, 255, 255, 0.8)` with `backdrop-filter: blur(12px)`.
+- Border-bottom: `1px solid rgba(0, 0, 0, 0.05)`.
