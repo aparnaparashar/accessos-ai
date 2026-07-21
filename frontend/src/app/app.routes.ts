@@ -7,9 +7,8 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent),
     data: {
       seo: {
-        title: 'Universal Accessibility Intelligence Platform',
-        description:
-          'AccessOS AI is one orchestration layer for scene understanding, OCR, simplification, speech, and sign-language assistance, plus a full accessibility-as-a-service developer platform.',
+        title: 'AccessOS AI — Developer-First AI API Platform',
+        description: 'Developer-first AI API platform for accessibility intelligence, scene understanding, OCR, and text simplification.',
       },
     },
   },
@@ -18,21 +17,61 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/features/features.component').then((m) => m.FeaturesComponent),
     data: {
       seo: {
-        title: 'Features',
-        description: 'Every End-User App capability, tagged LIVE, BUILT, or PLANNED to match exactly what the code does today.',
+        title: 'API Features & Demos',
+        description: 'Interactive live demos for OCR, Vision, Accessibility Assist, Simplification, and Sign Language APIs.',
       },
     },
   },
   {
-    path: 'companion',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/companion/companion.component').then((m) => m.CompanionComponent),
+    path: 'docs',
+    loadComponent: () => import('./pages/docs/docs.component').then((m) => m.DocumentationComponent),
     data: {
       seo: {
-        title: 'AI Companion',
-        description: 'Describe an image or ask a question and get a fused accessibility response tailored to your preferences.',
+        title: 'Documentation',
+        description: 'Comprehensive API reference, quickstarts, and SDK guides for AccessOS AI.',
       },
     },
+  },
+  {
+    path: 'playground',
+    loadComponent: () => import('./pages/playground/playground.component').then((m) => m.PlaygroundComponent),
+    data: {
+      seo: {
+        title: 'API Playground',
+        description: 'Interactive API explorer for AccessOS AI endpoints.',
+      },
+    },
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./pages/about/about.component').then((m) => m.AboutComponent),
+    data: {
+      seo: {
+        title: 'About AccessOS AI',
+        description: 'Learn about our mission to power universal accessibility with enterprise AI infrastructure.',
+      },
+    },
+  },
+  {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/developer-portal/developer-portal.component').then((m) => m.DeveloperPortalComponent),
+    data: {
+      seo: {
+        title: 'Developer Dashboard',
+        description: 'Manage projects, API keys, logs, webhooks, and performance metrics.',
+      },
+    },
+  },
+  {
+    path: 'developer-portal',
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
+  },
+  {
+    path: 'companion',
+    redirectTo: 'playground',
+    pathMatch: 'full',
   },
   {
     path: 'settings',
@@ -40,66 +79,25 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.component').then((m) => m.SettingsComponent),
     data: {
       seo: {
-        title: 'Accessibility Settings',
-        description: 'Set your primary disability or support need, reading level, and preferred output modalities.',
-      },
-    },
-  },
-  {
-    path: 'developer-portal',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/developer-portal/developer-portal.component').then((m) => m.DeveloperPortalComponent),
-    data: {
-      seo: {
-        title: 'Developer Portal',
-        description: 'Manage applications, generate API keys, monitor usage, and view estimated billing for the AccessOS AI platform.',
-      },
-    },
-  },
-  {
-    path: 'architecture',
-    loadComponent: () => import('./pages/architecture/architecture.component').then((m) => m.ArchitectureComponent),
-    data: {
-      seo: {
-        title: 'Architecture',
-        description: 'The real system architecture behind AccessOS AI today: what actually runs versus what is still planned.',
-      },
-    },
-  },
-  {
-    path: 'pricing',
-    loadComponent: () => import('./pages/pricing/pricing.component').then((m) => m.PricingComponent),
-    data: {
-      seo: {
-        title: 'Pricing',
-        description: 'Plans and estimated usage-based costs for the AccessOS AI developer platform.',
-      },
-    },
-  },
-  {
-    path: 'roadmap',
-    loadComponent: () => import('./pages/roadmap/roadmap.component').then((m) => m.RoadmapComponent),
-    data: {
-      seo: {
-        title: 'Roadmap',
-        description: 'What has shipped so far and what is planned next for AccessOS AI, regenerated after every phase lands.',
+        title: 'Developer Settings',
+        description: 'Manage profile, security credentials, theme preferences, and API defaults.',
       },
     },
   },
   {
     path: 'login',
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
-    data: { seo: { title: 'Sign in', description: 'Sign in to your AccessOS AI account.' } },
+    data: { seo: { title: 'Developer Sign In', description: 'Sign in to your AccessOS AI developer account.' } },
   },
   {
     path: 'signup',
     loadComponent: () => import('./pages/auth/signup/signup.component').then((m) => m.SignupComponent),
-    data: { seo: { title: 'Create account', description: 'Create an AccessOS AI end-user or developer account.' } },
+    data: { seo: { title: 'Get API Key', description: 'Create an AccessOS AI developer account to get your API key.' } },
   },
   {
     path: '404',
     loadComponent: () => import('./pages/not-found/not-found.component').then((m) => m.NotFoundComponent),
-    data: { seo: { title: 'Page not found', description: 'The page you were looking for does not exist.' } },
+    data: { seo: { title: 'Page Not Found', description: 'The requested page could not be found.' } },
   },
   { path: '**', redirectTo: '404' },
 ];

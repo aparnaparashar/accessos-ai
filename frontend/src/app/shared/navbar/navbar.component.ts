@@ -11,22 +11,25 @@ import { AuthService } from '../../core/auth.service';
     <header class="nav">
       <div class="container nav-inner">
         <a routerLink="/" class="brand">
-          <img src="/assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
-          <span class="brand-name">AccessOS <b>AI</b></span>
+          <img src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
+          <span class="brand-name">AccessOS <b class="gradient-text">AI</b></span>
         </a>
+
         <button class="mobile-menu-btn" (click)="menuOpen = !menuOpen" aria-label="Toggle menu">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
+
         <nav class="links" [class.menuOpen]="menuOpen">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
           <a routerLink="/features" routerLinkActive="active">Features</a>
+          <a routerLink="/docs" routerLinkActive="active">Documentation</a>
+          <a routerLink="/playground" routerLinkActive="active">Playground</a>
+          <a routerLink="/about" routerLinkActive="active">About Us</a>
           @if (auth.user()) {
-            <a routerLink="/companion" routerLinkActive="active">Companion</a>
+            <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
           }
-          <a routerLink="/developer-portal" routerLinkActive="active">Developer Portal</a>
-          <a routerLink="/architecture" routerLinkActive="active">Architecture</a>
-          <a routerLink="/pricing" routerLinkActive="active">Pricing</a>
-          <a routerLink="/roadmap" routerLinkActive="active">Roadmap</a>
         </nav>
+
         @if (auth.user()) {
           <div class="profile-wrapper">
             <button type="button" class="profile-trigger" (click)="toggleProfile($event)" aria-haspopup="true" [attr.aria-expanded]="profileOpen">
@@ -44,6 +47,10 @@ import { AuthService } from '../../core/auth.service';
                   </div>
                 </div>
                 <div class="profile-divider"></div>
+                <a routerLink="/dashboard" class="profile-item" role="menuitem" (click)="profileOpen = false">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Dashboard
+                </a>
                 <a routerLink="/settings" class="profile-item" role="menuitem" (click)="profileOpen = false">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                   Settings
@@ -57,8 +64,8 @@ import { AuthService } from '../../core/auth.service';
           </div>
         } @else {
           <div class="nav-account">
-            <a routerLink="/login" class="btn btn-ghost nav-cta">Sign in</a>
-            <a routerLink="/signup" class="btn btn-primary nav-cta">Get API Access</a>
+            <a routerLink="/login" class="btn btn-ghost nav-cta">Login</a>
+            <a routerLink="/signup" class="btn btn-primary nav-cta">Get API Key</a>
           </div>
         }
       </div>
@@ -66,137 +73,118 @@ import { AuthService } from '../../core/auth.service';
   `,
   styles: [`
     .nav {
-      position: sticky; top: 0; z-index: 40;
+      position: sticky; top: 0; z-index: 50;
       background: var(--bg-overlay);
-      backdrop-filter: blur(14px);
-      box-shadow: var(--shadow-xs);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
     }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
     .brand-logo {
-      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      width: 32px;
+      height: 32px;
       object-fit: contain;
+      border-radius: var(--radius-sm);
+      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
+      transition: transform var(--duration) var(--ease), filter var(--duration) var(--ease);
     }
-    .brand-name { font-family: var(--font-display); font-size: 18px; color: var(--ink); }
-    .brand-name b { font-weight: 700; color: var(--accent); }
-    .links { display: flex; gap: 4px; font-size: 14px; color: var(--ink-soft); align-items: center; }
+    .brand:hover .brand-logo {
+      transform: scale(1.08) rotate(3deg);
+      filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
+    }
+    .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .gradient-text {
+      background: var(--vibrant-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .links { display: flex; gap: 6px; font-size: 14px; color: var(--ink-soft); align-items: center; }
     .links a {
-      padding: 8px 16px;
-      border-radius: var(--radius-full);
-      transition: all var(--duration) var(--ease);
-      border: 1px solid transparent;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      transition: all var(--duration-fast) var(--ease);
+      font-weight: 500;
     }
     .links a:hover {
-      color: var(--ink);
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-color: rgba(255, 255, 255, 0.7);
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-      transform: translateY(-1px);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
     }
     .links a.active {
-      color: var(--accent);
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-color: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04), inset 0 1px 1px rgba(255, 255, 255, 1);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
     }
-    .nav-account { display: flex; align-items: center; gap: 12px; }
-    .nav-cta { padding: 8px 20px; font-size: 13px; }
+    .nav-account { display: flex; align-items: center; gap: 10px; }
+    .nav-cta { padding: 8px 18px; font-size: 13px; }
 
-    /* --- Profile dropdown --- */
+    /* Profile dropdown */
     .profile-wrapper { position: relative; }
     .profile-trigger {
       display: flex; align-items: center; gap: 8px;
-      background: transparent; border: 1.5px solid var(--line);
+      background: var(--bg-deep); border: 1px solid var(--line);
       border-radius: var(--radius-full);
-      padding: 6px 14px 6px 6px;
-      cursor: pointer; font-family: var(--font-body);
-      font-size: 13px; font-weight: 500; color: var(--ink);
-      transition: all var(--duration) var(--ease);
+      padding: 4px 12px 4px 4px;
+      cursor: pointer; font-family: var(--font-sans);
+      font-size: 13px; font-weight: 500; color: var(--ink-heading);
+      transition: all var(--duration-fast) var(--ease);
     }
-    .profile-trigger:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .profile-trigger:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.04); }
     .profile-avatar {
       width: 28px; height: 28px; border-radius: var(--radius-full);
-      background: var(--accent); color: var(--accent-ink);
+      background: var(--vibrant-gradient); color: #fff;
       display: grid; place-items: center;
-      font-family: var(--font-display); font-size: 12px; font-weight: 700;
-      letter-spacing: 0.02em;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 700;
     }
     .profile-label { margin-left: 2px; }
-    .profile-chevron {
-      transition: transform var(--duration) var(--ease);
-      opacity: 0.5;
-    }
+    .profile-chevron { transition: transform var(--duration-fast) var(--ease); opacity: 0.7; }
     .profile-chevron.open { transform: rotate(180deg); }
 
     .profile-dropdown {
       position: absolute; top: calc(100% + 8px); right: 0;
-      min-width: 260px;
+      min-width: 240px;
       background: var(--bg-panel);
       border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-md);
       box-shadow: var(--shadow-lg);
       padding: 8px;
-      animation: fade-up var(--duration-fast) var(--ease-out);
-      z-index: 50;
+      animation: fade-up var(--duration-fast) var(--ease);
+      z-index: 60;
     }
-    .profile-info {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px;
-    }
+    .profile-info { display: flex; align-items: center; gap: 12px; padding: 8px 10px; }
     .profile-avatar-lg {
-      width: 40px; height: 40px; border-radius: var(--radius-full);
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-      color: var(--accent-ink);
-      display: grid; place-items: center;
-      font-family: var(--font-display); font-size: 16px; font-weight: 700;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      background: var(--vibrant-gradient); color: #fff;
+      display: grid; place-items: center; font-weight: 700; font-size: 14px;
       flex-shrink: 0;
     }
     .profile-details { display: flex; flex-direction: column; min-width: 0; }
-    .profile-name {
-      font-size: 14px; font-weight: 600; color: var(--ink);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .profile-email {
-      font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .profile-divider {
-      height: 1px; background: var(--line); margin: 4px 12px;
-    }
+    .profile-name { font-size: 13px; font-weight: 600; color: var(--ink-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .profile-email { font-size: 11px; color: var(--ink-muted); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .profile-divider { height: 1px; background: var(--line); margin: 6px 0; }
     .profile-item {
       display: flex; align-items: center; gap: 10px;
-      width: 100%; padding: 10px 12px;
+      width: 100%; padding: 8px 10px;
       border: none; background: transparent;
       border-radius: var(--radius-sm);
-      font-family: var(--font-body); font-size: 14px; font-weight: 500;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
       color: var(--ink-soft); cursor: pointer; text-align: left;
       transition: all var(--duration-fast) var(--ease);
     }
-    .profile-item:hover { background: var(--accent-soft); color: var(--accent); }
+    .profile-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
     .profile-item svg { flex-shrink: 0; opacity: 0.7; }
-    .profile-item:hover svg { opacity: 1; }
     .profile-logout:hover { background: var(--error-soft); color: var(--error); }
 
-    /* --- Mobile --- */
     .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--ink); cursor: pointer; padding: 4px; }
-    @media (max-width: 900px) {
+    @media (max-width: 860px) {
       .mobile-menu-btn { display: block; }
       .links {
-        display: none;
-        position: absolute; top: 64px; left: 16px; right: 16px;
-        flex-direction: column;
-        background: var(--bg-panel);
-        box-shadow: var(--shadow-md);
-        padding: 16px;
-        border-radius: var(--radius-lg);
-        gap: 16px;
+        display: none; position: absolute; top: 64px; left: 16px; right: 16px;
+        flex-direction: column; background: var(--bg-panel);
+        border: 1px solid var(--line); padding: 16px;
+        border-radius: var(--radius-md); gap: 8px;
+        box-shadow: var(--shadow-lg);
       }
       .links.menuOpen { display: flex; }
-      .profile-label { display: none; }
     }
   `],
 })

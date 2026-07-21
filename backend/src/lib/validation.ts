@@ -79,14 +79,25 @@ export const updateWebhookSchema = z.object({
 
 // ── Product APIs ──────────────────────────────────────────────────────
 
-export const ocrRequestSchema = z.object({
-  image: z.string().min(1, "image (base64/data URL) is required"),
-});
+// Accepts either image (base64 data URL) or image_url (remote URL); normalises to `image`.
+const imageField = z
+  .object({
+    image: z.string().min(1).optional(),
+    image_url: z.string().url().optional(),
+  })
+  .refine((d) => d.image || d.image_url, { message: "Provide either image (base64) or image_url" })
+  .transform((d) => ({ image: (d.image || d.image_url) as string }));
 
-export const visionRequestSchema = z.object({
-  image: z.string().min(1, "image (base64/data URL) is required"),
-  simplified: z.boolean().optional(),
-});
+export const ocrRequestSchema = imageField;
+
+export const visionRequestSchema = z
+  .object({
+    image: z.string().min(1).optional(),
+    image_url: z.string().url().optional(),
+    simplified: z.boolean().optional(),
+  })
+  .refine((d) => d.image || d.image_url, { message: "Provide either image (base64) or image_url" })
+  .transform((d) => ({ image: (d.image || d.image_url) as string, simplified: d.simplified }));
 
 export const simplifyRequestSchema = z.object({
   text: z.string().min(1, "text is required"),
@@ -94,10 +105,14 @@ export const simplifyRequestSchema = z.object({
 
 export const accessibilityRequestSchema = z.object({
   image: z.string().nullable().optional(),
+  image_url: z.string().url().nullable().optional(),
   text: z.string().nullable().optional(),
   reading_level: z.enum(["standard", "simplified"]).optional(),
   output_modalities: z.array(z.enum(["audio", "text", "haptic"])).optional(),
-});
+}).transform((d) => ({
+  ...d,
+  image: d.image || d.image_url || null,
+}));
 
 export const signLanguageRequestSchema = z.object({
   text: z.string().min(1, "text is required"),

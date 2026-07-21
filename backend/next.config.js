@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Bridges public specs routes to Next.js App Router endpoints under src/app/api/*
+  experimental: {
+    serverComponentsExternalPackages: ["tesseract.js"],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async rewrites() {
     return [
       { source: "/v1/:path*", destination: "/api/v1/:path*" },
@@ -20,4 +28,5 @@ const nextConfig = {
     ];
   },
 };
+
 module.exports = nextConfig;

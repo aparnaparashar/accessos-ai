@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { runTextSimplify } from "@/lib/orchestrator";
+import { requireAuth } from "@/lib/requireAuth";
 import { simplifyRequestSchema, parseJsonBody } from "@/lib/validation";
 
 /**
- * POST /demo/simplify — Public Text Simplification demo endpoint. No API key required.
+ * POST /v1/demo/simplify — Authenticated text simplification demo. Requires developer JWT Bearer token.
+ * Calls the real AI provider (OpenAI/Gemini) to simplify text.
  */
 export async function POST(req: Request) {
+  const auth = requireAuth(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const parsed = await parseJsonBody(req, simplifyRequestSchema);
     if (!parsed.ok) return parsed.response;
@@ -16,6 +21,9 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ ...result, demo: true });
   } catch (err) {
-    return NextResponse.json({ error: "server_error", detail: (err as Error).message }, { status: 500 });
+    return NextResponse.json(
+      { error: "server_error", detail: (err as Error).message },
+      { status: 500 }
+    );
   }
 }
