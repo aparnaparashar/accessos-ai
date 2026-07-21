@@ -1,16 +1,22 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { MonolithCanvasComponent } from './monolith-canvas.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MonolithCanvasComponent],
   template: `
     <div class="home-page">
       <!-- Hero Section -->
-      <section class="section relative overflow-hidden bg-base">
-        <div class="container grid-12 items-center">
+      <section class="hero-section">
+        <!-- 3D Monolith Background -->
+        <app-monolith-canvas class="hero-canvas-bg"></app-monolith-canvas>
+        <!-- Gradient overlay for readability -->
+        <div class="hero-readability-overlay"></div>
+        <!-- Content -->
+        <div class="container grid-12 items-center hero-content-wrapper">
           <div class="hero-content">
             <div class="eyebrow">DEVELOPER-FIRST INTELLIGENCE</div>
             <h1 class="hero-title italic">
@@ -354,18 +360,78 @@ import { RouterLink } from '@angular/router';
     
     .text-ink { color: #111827 !important; }
     .text-white { color: #ffffff; }
-    
-    .hero-content { grid-column: span 6; }
-    .hero-visual { grid-column: span 6; display: flex; justify-content: flex-end; }
+
+    /* ── Hero with 3D Monolith Background ── */
+    .hero-section {
+      position: relative;
+      overflow: hidden;
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 32px;
+      background: var(--bg-base);
+    }
+
+    .hero-canvas-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.55;
+    }
+
+    .hero-readability-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 75% 85% at 50% 50%, transparent 35%, var(--bg-base) 92%),
+        linear-gradient(180deg, rgba(19,19,21,0.15) 0%, transparent 30%, transparent 70%, rgba(19,19,21,0.35) 100%);
+    }
+
+    .hero-content-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1360px;
+    }
+
+    .hero-content {
+      grid-column: span 6;
+      text-align: left;
+    }
+
+    .hero-visual {
+      grid-column: span 6;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .hero-content .hero-title {
+      font-size: clamp(38px, 4.5vw, 64px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      text-shadow: 0 2px 30px rgba(0,0,0,0.5);
+    }
+
+    .hero-content .lede {
+      font-size: clamp(16px, 1.4vw, 18px);
+      text-shadow: 0 1px 16px rgba(0,0,0,0.4);
+    }
+
     @media (max-width: 900px) {
+      .hero-section { padding: 48px 20px; min-height: auto; }
       .hero-content, .hero-visual { grid-column: span 12; justify-content: center; text-align: center; }
+      .hero-content { text-align: center; }
       .hero-actions { justify-content: center; }
     }
 
-    .hero-title { font-size: 64px; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; }
-    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
-    .btn-lg { padding: 18px 36px; font-size: 16px; }
-    .hero-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .hero-title { font-size: clamp(38px, 4.5vw, 64px); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-start; }
+    .btn-lg { padding: 16px 32px; font-size: 15px; }
+    .hero-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); }
 
     /* Code Window */
     .code-window { padding: 0; overflow: hidden; width: 100%; border-color: rgba(255,255,255,0.1); background: #0D0D0D; }
