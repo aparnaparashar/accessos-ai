@@ -11,6 +11,7 @@ import { AuthService } from '../../core/auth.service';
     <header class="nav">
       <div class="container nav-inner">
         <a routerLink="/" class="brand">
+          <img src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
           <span class="brand-name">AccessOS <b class="gradient-text">AI</b></span>
         </a>
 
@@ -79,7 +80,19 @@ import { AuthService } from '../../core/auth.service';
       border-bottom: 1px solid var(--line);
     }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
+      transition: transform var(--duration) var(--ease), filter var(--duration) var(--ease);
+    }
+    .brand:hover .brand-logo {
+      transform: scale(1.08) rotate(3deg);
+      filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
+    }
     .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
     .gradient-text {
       background: var(--vibrant-gradient);
