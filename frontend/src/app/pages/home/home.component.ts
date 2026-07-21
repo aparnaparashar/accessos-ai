@@ -9,305 +9,510 @@ import { RouterLink } from '@angular/router';
   template: `
     <div class="home-page">
       <!-- Hero Section -->
-      <section class="hero-section">
-        <div class="container hero-inner">
-          <div class="hero-text">
-            <div class="eyebrow">
-              <span class="status-chip built">ANNOUNCING VERSION 2.0</span>
-              DEVELOPER-FIRST INTELLIGENCE
-            </div>
-            <h1 class="hero-title">Architecting the Future of AI Accessibility.</h1>
-            <p class="hero-desc">
-              The most reliable, high-throughput API for integrating vision, OCR, text simplification, and real-time accessibility intelligence into production apps.
+      <section class="section relative overflow-hidden bg-base">
+        <div class="container grid-12 items-center">
+          <div class="hero-content">
+            <div class="eyebrow">DEVELOPER-FIRST INTELLIGENCE</div>
+            <h1 class="hero-title italic">
+              Architecting the Future of AI.
+            </h1>
+            <p class="lede mb-12">
+              The most reliable way to integrate agentic intelligence into your production environment. Scalable, secure, and developer-first.
             </p>
             <div class="hero-actions">
-              <a routerLink="/developer-portal" class="btn btn-primary btn-lg">Get API Key</a>
-              <a routerLink="/docs" class="btn btn-ghost btn-lg">Documentation</a>
+              <a routerLink="/signup" class="btn btn-primary btn-lg shadow-glow">Schedule a Consultation</a>
+              <a routerLink="/docs" class="btn btn-ghost btn-lg hero-ghost">View Documentation</a>
             </div>
           </div>
+          
+          <div class="hero-visual">
+            <div class="code-window card vibrant-border">
+              <div class="code-window-header">
+                <div class="window-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+              </div>
+              <div class="code-body">
+                <pre><code><span class="token-keyword">import</span> {{ '{' }} AccessosAgent {{ '}' }} <span class="token-keyword">from</span> <span class="token-string">'@accessos/core'</span>;
 
-          <!-- Code Window -->
-          <div class="hero-code-window card">
-            <div class="code-window-header">
-              <div class="window-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
+<span class="token-keyword">const</span> agent = <span class="token-keyword">new</span> AccessosAgent({{ '{' }}
+  identity: <span class="token-string">'enterprise-architect'</span>,
+  capabilities: [<span class="token-string">'workflow_automation'</span>, <span class="token-string">'data_synthesis'</span>],
+  security: <span class="token-string">'hardened'</span>
+{{ '}' }});
+
+<span class="token-keyword">await</span> agent.initiateWorkflow(<span class="token-string">'optimize-pipeline'</span>);</code></pre>
               </div>
-              <div class="code-lang-selector">
-                <button
-                  *ngFor="let lang of codeLangs"
-                  [class.active]="selectedLang === lang"
-                  (click)="selectedLang = lang"
-                >
-                  {{ lang }}
-                </button>
+              <div class="code-window-footer">
+                <span class="preview-badge">Preview</span>
               </div>
-            </div>
-            <div class="code-body">
-              <pre><code>{{ heroCode[selectedLang] }}</code></pre>
-            </div>
-            <div class="code-footer">
-              <span class="mono muted">Latency: 38ms</span>
-              <button class="copy-btn" (click)="copyCode()">{{ copied ? 'Copied!' : 'Copy Code' }}</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Trust Grid -->
-      <section class="trust-section">
+      <!-- Social Proof -->
+      <section class="social-proof">
+        <div class="container text-center">
+          <div class="badge-pill mx-auto mb-6">
+            <span class="pulse-dot"></span>
+            <span>Ecosystem Partners</span>
+          </div>
+          <h2 class="hero-title italic mb-4" style="font-size: 32px;">Trusted by modern engineering teams worldwide.</h2>
+          <p class="lede text-center mx-auto opacity-60">Powering cognitive accessibility and multi-modal AI pipelines for enterprise scale.</p>
+          <div class="feature-grid mt-12 text-left">
+            <div class="feature-bullet card border-line">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-accent">api</span>
+                <h4 class="m-0 font-semibold text-white text-sm">Multi-Modal Orchestration</h4>
+              </div>
+              <p class="muted text-sm m-0">Run OCR, computer vision, and text simplification through a single robust endpoint.</p>
+            </div>
+            
+            <div class="feature-bullet card border-line">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-accent">bolt</span>
+                <h4 class="m-0 font-semibold text-white text-sm">Edge Latency</h4>
+              </div>
+              <p class="muted text-sm m-0">Lightning-fast inference architectures optimized for real-time global availability.</p>
+            </div>
+            
+            <div class="feature-bullet card border-line">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-accent">shield_lock</span>
+                <h4 class="m-0 font-semibold text-white text-sm">Zero-Retention Security</h4>
+              </div>
+              <p class="muted text-sm m-0">Strict enterprise compliance ensuring payload data is never logged or stored.</p>
+            </div>
+
+            <div class="feature-bullet card border-line">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-accent">psychology</span>
+                <h4 class="m-0 font-semibold text-white text-sm">Cognitive Translation</h4>
+              </div>
+              <p class="muted text-sm m-0">Instant natural language downgrading tailored for users with cognitive disabilities.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Operational Metrics -->
+      <section class="section metrics-section">
+        <div class="container grid-3">
+          <div class="metric-card card vibrant-border text-center">
+            <p class="eyebrow muted-eyebrow">SYSTEM OPERATIONAL</p>
+            <p class="metric-value">99.8%</p>
+          </div>
+          <div class="metric-card card vibrant-border text-center">
+            <p class="eyebrow muted-eyebrow">PROCESSING LATENCY</p>
+            <p class="metric-value">12ms</p>
+          </div>
+          <div class="metric-card card vibrant-border text-center">
+            <p class="eyebrow muted-eyebrow">SUCCESS RATE</p>
+            <p class="metric-value">99.99%</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Premium Intelligence Header -->
+      <section class="section-sm bg-deep border-t border-b text-center">
         <div class="container">
-          <p class="trust-label">TRUSTED BY HIGH-GROWTH ENGINEERING TEAMS</p>
-          <div class="trust-logos">
-            <span class="trust-brand">NEXUS AI</span>
-            <span class="trust-brand">SYNAPSE</span>
-            <span class="trust-brand">DEVFLOW</span>
-            <span class="trust-brand">AETHER DATA</span>
-            <span class="trust-brand">OMNI VISION</span>
-          </div>
+          <h2 class="hero-title italic mb-6 mx-auto">Premium Intelligence, Delivered.</h2>
+          <p class="lede mx-auto opacity-80">Engineered for teams that demand zero compromise on speed, reliability, and security.</p>
         </div>
       </section>
 
-      <!-- API Showcase -->
-      <section class="showcase-section section">
+      <!-- Architectural Excellence (Bento Grid) -->
+      <section class="section bg-deep">
         <div class="container">
           <div class="section-head">
-            <div class="eyebrow">HIGH-PERFORMANCE APIs</div>
-            <h2>Built for Scale, Precision & Developer Experience</h2>
-            <p class="lede">Unified endpoints designed for enterprise applications, edge apps, and high-concurrency environments.</p>
+            <h2>Architectural Excellence</h2>
+            <p class="lede opacity-80">We don't just build features; we design intelligent systems that evolve with your business needs.</p>
           </div>
-
-          <div class="grid-3">
-            <div class="card feature-card">
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10M7 12h10M7 17h6"/></svg>
+          <div class="bento-grid">
+            <div class="bento-card card card-hover vibrant-border" style="grid-column: span 7;">
+              <div class="icon-wrap"><span class="material-symbols-outlined">smart_toy</span></div>
+              <h3>Custom AI Agents</h3>
+              <p class="opacity-80">Autonomous agents that handle complex, multi-step business logic with unparalleled precision and context-awareness.</p>
+              <div class="bento-graphic mt-auto">
+                <div class="graphic-line w-100"></div>
+                <div class="graphic-line w-75"></div>
+                <div class="graphic-line w-50"></div>
               </div>
-              <h3>Optical Character Recognition</h3>
-              <p>High-accuracy text extraction with position bounding boxes and document hierarchy parsing.</p>
-              <a routerLink="/features" [queryParams]="{ feature: 'ocr' }" class="card-link">Explore OCR API →</a>
             </div>
-
-            <div class="card feature-card">
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </div>
-              <h3>Vision & Scene Description</h3>
-              <p>Generates rich, contextual image descriptions and accessibility alt-text optimized for screen readers.</p>
-              <a routerLink="/features" [queryParams]="{ feature: 'vision' }" class="card-link">Explore Vision API →</a>
+            
+            <div class="bento-card card card-hover vibrant-border" style="grid-column: span 5;">
+              <div class="icon-wrap"><span class="material-symbols-outlined">hub</span></div>
+              <h3>Workflow Automation</h3>
+              <p class="opacity-80">Bridge the gap between legacy tools and modern AI intelligence through robust API orchestration.</p>
+              <a href="#" class="bento-link mt-auto">LEARN MORE <span class="material-symbols-outlined">arrow_forward</span></a>
             </div>
-
-            <div class="card feature-card">
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            
+            <div class="bento-card card card-hover vibrant-border" style="grid-column: span 4;">
+              <div class="icon-wrap"><span class="material-symbols-outlined">architecture</span></div>
+              <h3>Strategy Consulting</h3>
+              <p class="opacity-80">Navigate the AI landscape with confidence. We provide technical roadmaps that prioritize long-term ROI.</p>
+            </div>
+            
+            <div class="bento-card card card-hover vibrant-border row-flex" style="grid-column: span 8;">
+              <div class="flex-1">
+                <div class="icon-wrap"><span class="material-symbols-outlined">shield_lock</span></div>
+                <h3>Hardened Security</h3>
+                <p class="opacity-80">Enterprise-grade safety protocols for LLM deployment, ensuring your data never leaves the architectural perimeter.</p>
               </div>
-              <h3>Text Simplification</h3>
-              <p>Transform dense technical jargon into clear, accessible prose adjusted for cognitive reading levels.</p>
-              <a routerLink="/features" [queryParams]="{ feature: 'simplify' }" class="card-link">Explore Simplify API →</a>
+              <div class="bento-graphic-side flex-1">
+                <div class="graphic-line w-75"></div>
+                <div class="graphic-line w-100"></div>
+                <div class="graphic-line w-50"></div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Call to Action -->
-      <section class="cta-section">
-        <div class="container text-center">
-          <div class="card cta-card vibrant-border">
-            <h2>Start Building in Minutes</h2>
-            <p class="max-w-lg mx-auto mb-6">Create a free developer account, generate your API keys, and test payloads in our playground.</p>
-            <div class="cta-buttons">
-              <a routerLink="/signup" class="btn btn-primary">Create Developer Account</a>
-              <a routerLink="/playground" class="btn btn-ghost">Open Playground</a>
+      <!-- Technical Proof -->
+      <section class="section border-t">
+        <div class="container bento-grid">
+          <div class="bento-card card card-hover vibrant-border" style="grid-column: span 8;">
+            <div class="icon-wrap"><span class="material-symbols-outlined">bolt</span></div>
+            <h3>Ultra Low Latency</h3>
+            <p class="opacity-80 mb-6">Our global inference network ensures your agents respond in sub-100ms. Distributed across 24 regions to keep your data close to your users.</p>
+            <div class="map-graphic">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA33uaCY7_BUhZNuySoLbCH011A5ngH4Nf020g34UPpj_h-O2ZigAfko7YmIiHP17Oj2-dtTAFpXnHiQuxbTag3ZUxWoBNq4jO_zS9yrLFgaE71vq1ePLQ_h1N-CPMc9BZCVYuujuScBmdmO6GQwKuSecAa1dhIhTJm_zk56PySEn82Lm0juwelNQkXrykheGZ-k_mOuvFtRiJJKRlShybJUeW_I12A102gqdiThsmJswQ1yRKINOUxfRqaB-VXRZdFxMCKPa-FgVs" alt="Global server map">
             </div>
+          </div>
+          
+          <div class="bento-card card bg-high vibrant-border" style="grid-column: span 4; justify-content: space-between;">
+            <div>
+              <div class="icon-wrap"><span class="material-symbols-outlined">shield</span></div>
+              <h3>Enterprise Compliance</h3>
+              <p class="opacity-80">SOC2 Type II, HIPAA, and GDPR compliant. Your data is encrypted at rest and in transit with your own keys.</p>
+            </div>
+            <div class="mt-10">
+              <span class="eyebrow opacity-60" style="font-size: 10px;">Active Protection</span>
+              <div class="protection-lines">
+                <div class="graphic-line filled"></div>
+                <div class="graphic-line filled"></div>
+                <div class="graphic-line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonial Section -->
+      <section class="section">
+        <div class="container text-center">
+          <div class="max-w-4xl mx-auto">
+            <span class="material-symbols-outlined quote-icon">format_quote</span>
+            <blockquote class="testimonial-text italic">
+              "Accessos-AI transformed our approach to automation. They didn't just give us a tool; they gave us an intelligent architecture that scales with our ambition."
+            </blockquote>
+            <div class="testimonial-author">
+              <div class="author-line"></div>
+              <p class="author-name">Eleanor Vance</p>
+              <p class="eyebrow opacity-60">CTO, STRATOS GLOBAL</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- API Endpoints Section -->
+      <section class="section bg-deep border-t">
+        <div class="container">
+          <div class="section-head text-center mx-auto mb-16">
+            <h2 class="hero-title italic">An API endpoint for any use case</h2>
+            <p class="lede mx-auto opacity-70">Do more with flexible API endpoints. Process files, run OCR, or trigger complex workflows with ease.</p>
+          </div>
+
+          <div class="grid-12 items-start">
+            <div class="endpoint-sidebar">
+              <div 
+                *ngFor="let endpoint of endpoints" 
+                class="endpoint-card card card-hover"
+                [class.active]="selectedEndpoint === endpoint.id"
+                (click)="selectedEndpoint = endpoint.id"
+              >
+                <div class="endpoint-header">
+                  <div class="icon-wrap-small"><span class="material-symbols-outlined">{{ endpoint.icon }}</span></div>
+                  <div>
+                    <h4 class="mb-0">{{ endpoint.title }}</h4>
+                    <p *ngIf="selectedEndpoint === endpoint.id" class="endpoint-desc">{{ endpoint.desc }}</p>
+                  </div>
+                </div>
+                <span *ngIf="selectedEndpoint === endpoint.id" class="status-chip live mt-3">POST</span>
+              </div>
+            </div>
+
+            <div class="endpoint-code">
+              <div class="code-window card shadow-glow">
+                <div class="code-window-header border-b">
+                  <div class="window-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <div class="code-lang-selector">
+                    <span class="mono muted">TypeScript</span>
+                    <span class="material-symbols-outlined muted text-sm ml-1">expand_more</span>
+                  </div>
+                </div>
+                <div class="code-body large-code">
+                  <pre><code>{{ getCurrentSnippet() }}</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="endpoints-cta">
+            <a routerLink="/docs" class="btn btn-ghost btn-lg"><span class="material-symbols-outlined">menu_book</span> See API Docs</a>
+            <a routerLink="/signup" class="btn btn-primary btn-lg">Get API Key</a>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Partnership Models -->
+      <section class="section bg-deep border-t">
+        <div class="container">
+          <div class="section-head text-center mx-auto mb-16">
+            <h2 class="hero-title italic">Partnership Models</h2>
+            <p class="lede mx-auto opacity-70">Choose the engagement structure that aligns with your technical scale.</p>
+          </div>
+          
+          <div class="grid-3 items-end">
+            <!-- Tier 1 -->
+            <div class="card pricing-card card-hover vibrant-border">
+              <h4>Strategic Review</h4>
+              <p class="muted mb-6">For teams exploring AI potential.</p>
+              <div class="price-wrap mb-8">
+                <span class="price">$4,500</span><span class="mono muted text-xs">/consult</span>
+              </div>
+              <ul class="pricing-features">
+                <li><span class="material-symbols-outlined">check_circle</span> Architecture Roadmap</li>
+                <li><span class="material-symbols-outlined">check_circle</span> Security Audit</li>
+              </ul>
+              <button class="btn btn-ghost w-full border mt-auto">Book Review</button>
+            </div>
+            
+            <!-- Tier 2 -->
+            <div class="card pricing-card card-popular shadow-glow">
+              <div class="popular-badge">Most Popular</div>
+              <h4 class="text-white">Agency Retainer</h4>
+              <p class="text-white opacity-80 mb-6">Embedded AI engineering team.</p>
+              <div class="price-wrap mb-8 text-white">
+                <span class="price">$12,000</span><span class="mono opacity-80 text-xs">/month</span>
+              </div>
+              <ul class="pricing-features text-white">
+                <li><span class="material-symbols-outlined opacity-80">check_circle</span> Unlimited Agent Dev</li>
+                <li><span class="material-symbols-outlined opacity-80">check_circle</span> 24/7 Managed Ops</li>
+                <li><span class="material-symbols-outlined opacity-80">check_circle</span> Custom Integrations</li>
+              </ul>
+              <button class="btn bg-white w-full text-ink mt-auto">Get Started</button>
+            </div>
+            
+            <!-- Tier 3 -->
+            <div class="card pricing-card card-hover vibrant-border">
+              <h4>Custom Forge</h4>
+              <p class="muted mb-6">One-off complex builds.</p>
+              <div class="price-wrap mb-8">
+                <span class="price">Custom</span>
+              </div>
+              <ul class="pricing-features">
+                <li><span class="material-symbols-outlined">check_circle</span> Custom LLM Training</li>
+                <li><span class="material-symbols-outlined">check_circle</span> On-premise Deployment</li>
+                <li><span class="material-symbols-outlined">check_circle</span> Dedicated Architect</li>
+              </ul>
+              <button class="btn btn-ghost w-full border mt-auto">Contact Us</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="section text-center border-t">
+        <div class="container relative z-10">
+          <h2 class="hero-title italic mb-6" style="font-size: 64px;">Ready to Scale?</h2>
+          <p class="lede mx-auto mb-10 opacity-80">Join the new era of cognitive automation. Let's build the intelligence that drives your future.</p>
+          <div class="hero-actions justify-center">
+            <a routerLink="/signup" class="btn btn-primary btn-lg shadow-glow">Talk to an Architect</a>
+            <a routerLink="/pricing" class="btn btn-ghost btn-lg hero-ghost">View Case Studies</a>
           </div>
         </div>
       </section>
     </div>
   `,
   styles: [`
-    .hero-section {
-      padding: 96px 0 64px;
-      border-bottom: 1px solid var(--line);
-      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+    .bg-base { background: var(--bg-base); }
+    .bg-deep { background: var(--bg-deep); }
+    .bg-high { background: var(--bg-panel-high); }
+    .border-t { border-top: 1px solid var(--line); }
+    .border-b { border-bottom: 1px solid var(--line); }
+    .border { border: 1px solid var(--line); }
+    .section-sm { padding: 80px 0; }
+    
+    .text-ink { color: #111827 !important; }
+    .text-white { color: #ffffff; }
+    
+    .hero-content { grid-column: span 6; }
+    .hero-visual { grid-column: span 6; display: flex; justify-content: flex-end; }
+    @media (max-width: 900px) {
+      .hero-content, .hero-visual { grid-column: span 12; justify-content: center; text-align: center; }
+      .hero-actions { justify-content: center; }
     }
-    .hero-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
-    }
-    .hero-title {
-      font-size: 56px;
-      font-weight: 500;
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      margin: 16px 0 24px;
-    }
-    .hero-desc {
-      font-size: 18px;
-      line-height: 1.6;
-      color: var(--ink-soft);
-      margin-bottom: 32px;
-      max-width: 540px;
-    }
+
+    .hero-title { font-size: 64px; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; }
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
-    .btn-lg { padding: 14px 28px; font-size: 15px; }
+    .btn-lg { padding: 18px 36px; font-size: 16px; }
+    .hero-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
 
     /* Code Window */
-    .hero-code-window {
-      background: var(--bg-deep);
-      border: 1px solid var(--line-strong);
-      box-shadow: var(--shadow-lg);
-      padding: 0;
-      overflow: hidden;
-    }
-    .code-window-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid var(--line);
-    }
+    .code-window { padding: 0; overflow: hidden; width: 100%; border-color: rgba(255,255,255,0.1); background: #0D0D0D; }
+    .code-window-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.02); }
+    .code-window-footer { display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .preview-badge { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; background: var(--bg-panel-high); padding: 4px 8px; border-radius: 4px; color: var(--ink-soft); }
+    
     .window-dots { display: flex; gap: 6px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot.red { background: #ff5f56; }
-    .dot.yellow { background: #ffbd2e; }
-    .dot.green { background: #27c93f; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #FF5F56; }
+    .dot.yellow { background: #FFBD2E; }
+    .dot.green { background: #27C93F; }
+    .code-body { padding: 32px; }
+    .large-code pre { min-height: 400px; }
+    .code-body pre { background: transparent; border: none; box-shadow: none; padding: 0; font-size: 14px; }
 
-    .code-lang-selector { display: flex; gap: 4px; }
-    .code-lang-selector button {
-      background: transparent;
-      border: none;
-      color: var(--ink-muted);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-    }
-    .code-lang-selector button.active {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.08);
-    }
+    /* Ecosystem Features */
+    .social-proof { padding: 96px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-deep); }
+    .badge-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 99px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .pulse-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 12px #4ade80; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px; }
+    @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+    
+    .feature-bullet { padding: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-panel-low); }
+    .feature-bullet:hover { transform: translateY(-4px); border-color: rgba(168, 85, 247, 0.4); box-shadow: var(--shadow-md); }
+    .text-accent { color: var(--accent); }
+    .text-left { text-align: left; }
 
-    .code-body { padding: 20px; max-height: 280px; overflow-y: auto; }
-    .code-body pre { margin: 0; padding: 0; background: transparent; border: none; font-size: 13px; }
-    .code-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      border-top: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .copy-btn {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--ink);
-      padding: 4px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      cursor: pointer;
-    }
+    /* Metrics */
+    .metrics-section { padding: 96px 0; }
+    .metric-card { padding: 48px; border-radius: var(--radius-md); background: var(--bg-panel-low); }
+    .muted-eyebrow { color: var(--accent); opacity: 0.8; letter-spacing: 0.15em; }
+    .metric-value { font-family: var(--font-display); font-size: 64px; margin: 0; color: var(--ink-heading); line-height: 1; }
 
-    /* Trust Section */
-    .trust-section {
-      padding: 32px 0;
-      border-bottom: 1px solid var(--line);
-      text-align: center;
-      background: var(--bg-deep);
-    }
-    .trust-label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: var(--ink-muted);
-      margin-bottom: 20px;
-    }
-    .trust-logos {
-      display: flex;
-      justify-content: center;
-      gap: 48px;
-      flex-wrap: wrap;
-    }
-    .trust-brand {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      font-size: 14px;
-      letter-spacing: 0.12em;
-      color: rgba(255, 255, 255, 0.4);
-    }
+    /* Bento Grid */
+    .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+    @media (max-width: 900px) { .bento-card { grid-column: span 12 !important; } .row-flex { flex-direction: column; } }
+    .bento-card { display: flex; flex-direction: column; padding: 40px; background: var(--bg-panel); border-color: rgba(255,255,255,0.05); }
+    .row-flex { flex-direction: row; gap: 32px; }
+    
+    .icon-wrap { width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; margin-bottom: 32px; }
+    .bento-card h3 { margin-bottom: 16px; font-size: 32px; }
+    
+    .bento-graphic { height: 160px; background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; }
+    .bento-graphic-side { background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: center; padding: 24px; gap: 12px; min-height: 160px; }
+    .graphic-line { height: 4px; background: var(--accent); border-radius: 2px; }
+    .graphic-line.filled { background: var(--accent); }
+    .graphic-line:not(.filled) { background: rgba(255,255,255,0.1); }
+    .w-100 { width: 100%; } .w-75 { width: 75%; } .w-50 { width: 50%; }
+    .bento-link { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 
-    /* Feature Cards */
-    .feature-card { display: flex; flex-direction: column; height: 100%; }
-    .card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-md);
-      background: var(--accent-soft);
-      color: var(--accent);
-      display: grid;
-      place-items: center;
-      margin-bottom: 16px;
-    }
-    .card-link {
-      margin-top: auto;
-      padding-top: 16px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--accent);
-    }
+    .map-graphic { height: 250px; border-radius: var(--radius-md); border: 1px solid var(--line); overflow: hidden; position: relative; }
+    .map-graphic img { width: 100%; height: 100%; object-fit: cover; opacity: 0.2; mix-blend-mode: screen; filter: grayscale(1); }
+    .protection-lines { display: flex; gap: 4px; margin-top: 16px; }
+    .protection-lines .graphic-line { flex: 1; }
 
-    .cta-section { padding: 64px 0 96px; }
-    .cta-card { padding: 48px; }
-    .cta-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    /* Testimonial */
+    .quote-icon { font-size: 80px; color: var(--accent-soft); margin-bottom: 48px; }
+    .testimonial-text { font-size: 48px; line-height: 1.2; font-family: var(--font-display); margin-bottom: 48px; }
+    .author-line { width: 48px; height: 2px; background: var(--vibrant-gradient); margin: 0 auto 24px; }
+    .author-name { font-size: 24px; font-weight: 500; color: var(--ink-heading); margin-bottom: 4px; }
 
-    @media (max-width: 900px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-title { font-size: 38px; }
-    }
-  `],
+    /* Endpoints */
+    .endpoint-sidebar { grid-column: span 5; display: flex; flex-direction: column; gap: 16px; }
+    .endpoint-code { grid-column: span 7; }
+    @media (max-width: 900px) { .endpoint-sidebar, .endpoint-code { grid-column: span 12; } }
+    .endpoint-card { padding: 24px; cursor: pointer; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center; border-color: rgba(255,255,255,0.1); }
+    .endpoint-card:hover:not(.active) { background: rgba(255,255,255,0.03); }
+    .endpoint-card.active { border-color: var(--accent); background: var(--accent-soft); }
+    .endpoint-header { display: flex; align-items: flex-start; gap: 16px; }
+    .icon-wrap-small { width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); color: var(--ink-soft); display: grid; place-items: center; }
+    .endpoint-card:hover .icon-wrap-small, .endpoint-card.active .icon-wrap-small { color: var(--accent); }
+    .endpoint-desc { font-size: 14px; margin-top: 4px; margin-bottom: 0; opacity: 0.7; }
+    .endpoints-cta { display: flex; justify-content: center; gap: 32px; margin-top: 64px; }
+
+    /* Pricing */
+    .pricing-card { display: flex; flex-direction: column; padding: 40px; }
+    .card-popular { background: var(--vibrant-gradient); transform: scale(1.05); position: relative; z-index: 10; border: none; }
+    .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #ffffff; color: var(--accent); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; padding: 6px 16px; border-radius: 999px; font-weight: 600; }
+    .price { font-size: 36px; font-weight: 500; }
+    .pricing-features { list-style: none; padding: 0; margin-bottom: 48px; display: flex; flex-direction: column; gap: 20px; }
+    .pricing-features li { display: flex; align-items: center; gap: 12px; font-size: 14px; opacity: 0.9; }
+    .pricing-features .material-symbols-outlined { color: var(--accent); opacity: 0.6; font-size: 18px; }
+    .card-popular .pricing-features .material-symbols-outlined { color: #ffffff; }
+  `]
 })
 export class HomeComponent {
-  selectedLang = 'Node.js';
-  copied = false;
+  selectedEndpoint = 'ocr';
 
-  codeLangs = ['Node.js', 'Python', 'cURL'];
+  endpoints = [
+    {
+      id: 'ocr',
+      title: 'Extract Text (OCR)',
+      icon: 'document_scanner',
+      desc: 'High-accuracy text extraction from documents or images.'
+    },
+    {
+      id: 'vision',
+      title: 'Analyze Scene',
+      icon: 'visibility',
+      desc: 'Generates rich, contextual image descriptions and accessibility alt-text.'
+    },
+    {
+      id: 'simplify',
+      title: 'Simplify Text',
+      icon: 'sort_by_alpha',
+      desc: 'Transform dense technical jargon into clear, accessible prose.'
+    }
+  ];
 
-  heroCode: Record<string, string> = {
-    'Node.js': `import { AccessOS } from '@accessos/core';
+  snippets: Record<string, string> = {
+    ocr: `import { AccessOS } from '@accessos/core';
 
-const client = new AccessOS({ apiKey: 'aos_live_8f3a1b...' });
+const client = new AccessOS({ apiKey: 'aos_live_xxx' });
 
-const result = await client.assist.process({
-  input_text: "Analyze scene and summarize accessibility requirements",
-  preferences: { reading_level: "simplified" }
+const result = await client.ocr.extract({
+  fileUrl: 'https://example.com/invoice.pdf',
+  options: { preserve_layout: true }
 });
 
-console.log(result.primary_output.text);`,
-    Python: `import accessos
+console.log(result.text);`,
+    vision: `import { AccessOS } from '@accessos/core';
 
-client = accessos.Client(api_key="aos_live_8f3a1b...")
+const client = new AccessOS({ apiKey: 'aos_live_xxx' });
 
-response = client.assist.create(
-    input_text="Analyze scene and summarize accessibility requirements",
-    preferences={"reading_level": "simplified"}
-)
+const result = await client.vision.describe({
+  imageUrl: 'https://example.com/dashboard.png',
+  detail_level: 'high'
+});
 
-print(response.primary_output.text)`,
-    cURL: `curl -X POST https://api.accessos.ai/v1/accessibility/assist \\
-  -H "Authorization: Bearer aos_live_8f3a1b..." \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "input_text": "Analyze scene and summarize accessibility requirements",
-    "preferences": { "reading_level": "simplified" }
-  }'`,
+console.log(result.alt_text);`,
+    simplify: `import { AccessOS } from '@accessos/core';
+
+const client = new AccessOS({ apiKey: 'aos_live_xxx' });
+
+const result = await client.text.simplify({
+  text: "The asynchronous nature of the non-blocking event loop...",
+  target_reading_level: "grade_8"
+});
+
+console.log(result.simplified_text);`
   };
 
-  copyCode() {
-    navigator.clipboard.writeText(this.heroCode[this.selectedLang]);
-    this.copied = true;
-    setTimeout(() => (this.copied = false), 2000);
+  getCurrentSnippet(): string {
+    return this.snippets[this.selectedEndpoint];
   }
 }

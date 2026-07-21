@@ -80,20 +80,20 @@ import { AuthService } from '../../core/auth.service';
       border-bottom: 1px solid var(--line);
     }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .brand-logo {
-      width: 32px;
-      height: 32px;
+      height: 28px;
+      width: auto;
       object-fit: contain;
       border-radius: var(--radius-sm);
-      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
+      filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(99, 102, 241, 0.35));
       transition: transform var(--duration) var(--ease), filter var(--duration) var(--ease);
     }
     .brand:hover .brand-logo {
       transform: scale(1.08) rotate(3deg);
-      filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
+      filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
     }
-    .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .brand-name { font-family: var(--font-display); font-size: 24px; font-weight: 500; color: #fff; letter-spacing: -0.04em; }
     .gradient-text {
       background: var(--vibrant-gradient);
       -webkit-background-clip: text;
@@ -105,13 +105,16 @@ import { AuthService } from '../../core/auth.service';
       border-radius: var(--radius-sm);
       transition: all var(--duration-fast) var(--ease);
       font-weight: 500;
+      opacity: 0.8;
     }
     .links a:hover {
       color: #ffffff;
+      opacity: 1;
       background: rgba(255, 255, 255, 0.05);
     }
     .links a.active {
       color: #ffffff;
+      opacity: 1;
       background: rgba(255, 255, 255, 0.08);
     }
     .nav-account { display: flex; align-items: center; gap: 10px; }

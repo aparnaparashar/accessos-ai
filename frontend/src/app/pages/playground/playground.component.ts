@@ -1,5 +1,6 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService, ApiError } from '../../core/api.service';
@@ -103,7 +104,7 @@ const ENDPOINT_LABELS: Record<string, string> = {
             </div>
 
             <div class="response-body font-mono text-xs" *ngIf="responseJson()">
-              <pre><code>{{ responseJson() }}</code></pre>
+              <pre><code [innerHTML]="highlightJson(responseJson())"></code></pre>
             </div>
 
             <div class="empty-res" *ngIf="!responseJson() && !executing()">
@@ -194,6 +195,7 @@ const ENDPOINT_LABELS: Record<string, string> = {
 export class PlaygroundComponent {
   private api = inject(ApiService);
   private authService = inject(AuthService);
+  private sanitizer = inject(DomSanitizer);
 
   isLoggedIn = computed(() => this.authService.isLoggedIn());
 
@@ -290,5 +292,16 @@ export class PlaygroundComponent {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
     }
+  }
+
+  highlightJson(code: string | null): SafeHtml {
+    if (!code) return '';
+    let html = code
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/("[^"]*")(\s*:)/g, '<span class="token-keyword">$1</span>$2')
+      .replace(/:\s*("[^"]*")/g, ': <span class="token-string">$1</span>')
+      .replace(/\b(true|false|null|[0-9]+(?:\.[0-9]+)?)\b/g, '<span class="token-property">$1</span>')
+      .replace(/([{}[\],])/g, '<span class="token-punctuation">$1</span>');
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }
