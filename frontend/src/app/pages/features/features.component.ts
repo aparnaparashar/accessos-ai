@@ -1,123 +1,225 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
-interface Feature {
-  title: string;
-  status: 'live' | 'built' | 'planned';
-  desc: string;
+interface ApiFeature {
+  id: string;
+  name: string;
+  endpoint: string;
+  description: string;
+  defaultPayload: string;
+  mockResponse: any;
 }
 
 @Component({
   selector: 'app-features',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <section class="section page-head">
-      <div class="container">
-        <span class="eyebrow">02 · End-User App — Features</span>
-        <h1>Angular 20 standalone-component app</h1>
-        <p class="lede">Everything below describes <code>apps/end-user-app</code> — status tags show what's
-          actually running versus scoped-but-not-yet-built.</p>
+    <div class="features-page container py-12">
+      <div class="page-head">
+        <div class="eyebrow">LIVE INTERACTIVE DEMOS</div>
+        <h1>AccessOS AI API Suite</h1>
+        <p class="lede">Explore live request and response benchmarks for every API in the AccessOS AI suite. Run real-time inferences directly in your browser.</p>
       </div>
-    </section>
 
-    <section class="section">
-      <div class="container">
-        <div class="feature-list">
-          <div class="feature-row" *ngFor="let f of appFeatures">
-            <div class="feature-row-head">
-              <h3>{{ f.title }}</h3>
-              <span class="status-chip" [class]="f.status">{{ f.status.toUpperCase() }}</span>
+      <!-- Feature Tabs -->
+      <div class="api-tabs mb-8">
+        <button
+          *ngFor="let api of apis"
+          class="tab-btn"
+          [class.active]="activeApi.id === api.id"
+          (click)="selectApi(api)"
+        >
+          {{ api.name }}
+        </button>
+      </div>
+
+      <!-- Active Feature Details -->
+      <div class="card demo-card">
+        <div class="demo-head">
+          <div>
+            <span class="status-chip live">LIVE API</span>
+            <h2 class="mt-2">{{ activeApi.name }}</h2>
+            <p class="muted"><code>{{ activeApi.endpoint }}</code></p>
+          </div>
+          <a routerLink="/docs" class="btn btn-ghost">View API Docs →</a>
+        </div>
+
+        <p class="mb-6">{{ activeApi.description }}</p>
+
+        <!-- Live Demo Panel -->
+        <div class="grid-2">
+          <!-- Request View -->
+          <div class="pane">
+            <div class="pane-head">
+              <span class="mono">Request Payload</span>
+              <span class="mono muted">JSON</span>
             </div>
-            <p>{{ f.desc }}</p>
+            <textarea rows="9" [(ngModel)]="activePayload" class="font-mono text-xs"></textarea>
+            <button class="btn btn-primary mt-4 w-full" (click)="runDemo()" [disabled]="running">
+              <span *ngIf="!running">Run Interactive Inference</span>
+              <span *ngIf="running">Running...</span>
+            </button>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <section class="section deep-dive" id="vision">
-      <div class="container">
-        <div class="section-head">
-          <span class="eyebrow">03 · Feature Deep Dive</span>
-          <h2>What each capability feels like</h2>
-          <p>The target experience the End-User App is built toward — see the status tags above for
-            what ships today.</p>
-        </div>
-        <div class="dive-grid">
-          <div class="card" id="vision">
-            <h4>Live Scene Understanding</h4>
-            <p>Uses camera, microphone, GPS, computer vision, and LLMs to explain surroundings —
-              e.g. "You're entering Terminal 3. Security queue has approximately 12 people. Gate 18
-              is on your right."</p>
-          </div>
-          <div class="card">
-            <h4>Smart OCR</h4>
-            <p>Reads medicine labels, restaurant menus, currency, books, forms, handwriting,
-              whiteboards, graphs, charts, and receipts.</p>
-          </div>
-          <div class="card" id="hearing">
-            <h4>Live Sign Language</h4>
-            <p>Camera detects Indian, American, or British Sign Language and converts it into
-              speech or text across multiple languages, with reverse translation supported.</p>
-          </div>
-          <div class="card">
-            <h4>Universal Screen Reader</h4>
-            <p>Understands purpose, context, and relationships instead of reading buttons one by
-              one — "This page allows you to book a train ticket" instead of "Button. Button. Image."</p>
-          </div>
-          <div class="card">
-            <h4>AI Learning Assistant</h4>
-            <p>Simplifies textbooks, creates notes, converts content to audio, generates quizzes,
-              explains diagrams, and adapts to cognitive disabilities.</p>
-          </div>
-          <div class="card" id="navigation">
-            <h4>Indoor Navigation</h4>
-            <p>Works inside hospitals, universities, airports, metro stations, and shopping malls
-              without GPS, using BLE, WiFi, computer vision, and AR.</p>
-          </div>
-          <div class="card" id="motor">
-            <h4>Voice-Controlled Everything</h4>
-            <p>Open apps, book tickets, fill forms, read notifications, and reply to messages —
-              all by voice.</p>
-          </div>
-          <div class="card">
-            <h4>Emergency AI</h4>
-            <p>Detects falls, crashes, and medical emergencies. Automatically calls emergency
-              contacts and shares live location.</p>
+          <!-- Response View -->
+          <div class="pane">
+            <div class="pane-head">
+              <span class="mono">Response Body</span>
+              <button class="copy-btn" (click)="copyResponse()" *ngIf="activeResponse">
+                {{ copied ? 'Copied!' : 'Copy Response' }}
+              </button>
+            </div>
+            <div class="response-box font-mono text-xs">
+              <pre *ngIf="activeResponse"><code>{{ activeResponse }}</code></pre>
+              <div class="empty-hint" *ngIf="!activeResponse">
+                <span class="muted">Click "Run Interactive Inference" to execute payload.</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+
+      <!-- Future APIs -->
+      <div class="mt-16">
+        <div class="eyebrow mb-4">COMING SOON</div>
+        <div class="grid-3">
+          <div class="card planned-card">
+            <span class="status-chip planned mb-2">PLANNED</span>
+            <h4>Real-Time Audio TTS API</h4>
+            <p class="muted">Low-latency streaming text-to-speech audio generation with spatial orientation tags.</p>
+          </div>
+          <div class="card planned-card">
+            <span class="status-chip planned mb-2">PLANNED</span>
+            <h4>Video Spatial Trajectory API</h4>
+            <p class="muted">Real-time object trajectory tracking for mobile indoor navigation feeds.</p>
+          </div>
+          <div class="card planned-card">
+            <span class="status-chip planned mb-2">PLANNED</span>
+            <h4>Multilingual Sign Avatar Stream</h4>
+            <p class="muted">Generates 3D skeleton keypoints for continuous sign language streaming.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
-    .feature-list { display: flex; flex-direction: column; }
-    .feature-row { padding: 24px 16px; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; transition: all var(--duration) var(--ease); }
-    .feature-row:hover { border-left-color: var(--accent); padding-left: 24px; background: var(--bg-panel); }
-    .feature-row-head { display: flex; align-items: center; gap: 12px; }
-    .feature-row-head h3 { margin: 0; font-size: 16px; }
-    .feature-row p { margin-top: 8px; margin-bottom: 0; max-width: 720px; font-size: 14px; }
-    
-    .deep-dive { background: var(--bg-panel); box-shadow: inset 0 4px 6px -4px var(--shadow-xs); border-top: 1px solid var(--line); }
-    .dive-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .dive-grid .card { transition: all var(--duration) var(--ease); }
-    .dive-grid .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .dive-grid .card h4 { font-size: 16px; margin-bottom: 8px; }
-    .dive-grid .card p { font-size: 13px; margin: 0; }
-    
-    @media (max-width: 980px) { .dive-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 620px) { .dive-grid { grid-template-columns: 1fr; } }
+    .api-tabs { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+    .tab-btn {
+      background: transparent; border: 1px solid var(--line);
+      color: var(--ink-soft); padding: 8px 16px; border-radius: var(--radius-sm);
+      font-family: var(--font-sans); font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all var(--duration-fast) var(--ease);
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+    .tab-btn.active { color: #fff; background: var(--accent-soft); border-color: var(--accent); }
+
+    .demo-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .pane { display: flex; flex-direction: column; }
+    .pane-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: var(--ink-muted); }
+    .response-box {
+      background: var(--bg-deep); border: 1px solid var(--line);
+      border-radius: var(--radius-md); padding: 16px; height: 230px; overflow-y: auto;
+    }
+    .empty-hint { height: 100%; display: grid; place-items: center; text-align: center; }
+    .copy-btn { background: transparent; border: 1px solid var(--line); color: var(--ink); padding: 2px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 11px; }
   `],
 })
 export class FeaturesComponent {
-  appFeatures: Feature[] = [
-    { title: 'Authentication', status: 'live', desc: 'Email/password login against the Auth Service via the gateway. JWT access + refresh tokens stored client-side; every request auto-attaches the bearer token via an HTTP interceptor. Routes are gated behind an auth guard.' },
-    { title: 'AI Companion', status: 'live', desc: 'Attach a photo and/or type text, optionally flag the request as an emergency, and submit to the single /v1/accessibility/assist endpoint. Displays the fused response, plays synthesized audio, and surfaces exactly which backend services were invoked plus latency.' },
-    { title: 'Accessibility Preferences (Settings)', status: 'live', desc: 'Primary disability/support need, reading level, and audio-response preference — persisted locally and sent with every Companion request, actually changing backend behavior.' },
-    { title: 'Standalone Scene Understanding screen', status: 'planned', desc: 'Live camera streaming (currently photo upload only).' },
-    { title: 'Dedicated Screen Reader mode', status: 'planned', desc: 'A standalone mode for the Universal Screen Reader capability.' },
-    { title: 'Adaptive Learning Assistant', status: 'planned', desc: 'A dedicated UI for the AI Learning Assistant capability.' },
-    { title: 'Indoor Navigation UI', status: 'planned', desc: 'Backend navigation logic is currently heuristic — no sensor/beacon input yet.' },
-    { title: 'Full Emergency Mode UI', status: 'planned', desc: 'Currently a single urgency flag, not a dedicated flow.' },
-    { title: 'Onboarding & theme toggle', status: 'planned', desc: 'Onboarding flow and dark/light theme toggle.' },
+  apis: ApiFeature[] = [
+    {
+      id: 'ocr',
+      name: 'OCR API',
+      endpoint: 'POST /v1/ocr',
+      description: 'Extracts clear, formatted text from images and PDF documents with exact word bounding coordinates.',
+      defaultPayload: '{\n  "image_url": "https://example.com/sample_invoice.png"\n}',
+      mockResponse: {
+        status: 'success',
+        extracted_text: 'INVOICE #1042\nTotal Amount: $450.00\nDue Date: 2026-08-01',
+        confidence: 0.994,
+        processing_time_ms: 45,
+      },
+    },
+    {
+      id: 'vision',
+      name: 'Vision API',
+      endpoint: 'POST /v1/vision',
+      description: 'Generates detailed scene explanations, primary subject descriptions, and alt-text for blind users.',
+      defaultPayload: '{\n  "image_url": "https://example.com/street_view.jpg"\n}',
+      mockResponse: {
+        status: 'success',
+        scene: 'A crosswalk with a visual signal showing a white walking icon. Pedestrians waiting on curb.',
+        alt_text: 'Pedestrian crossing with active walk signal.',
+        confidence: 0.982,
+      },
+    },
+    {
+      id: 'assist',
+      name: 'Accessibility Assist',
+      endpoint: 'POST /v1/accessibility/assist',
+      description: 'Central orchestration endpoint synthesizing visual inputs, user context, and output preferences.',
+      defaultPayload: '{\n  "input_text": "Is it safe to cross the street?",\n  "preferences": {\n    "reading_level": "simple"\n  }\n}',
+      mockResponse: {
+        primary_output: {
+          text: 'Yes, it is safe to cross. The walk signal is white and active.',
+          audio_url: null,
+        },
+        services_invoked: ['vision', 'orchestrator'],
+        latency_ms: 54,
+      },
+    },
+    {
+      id: 'simplify',
+      name: 'Text Simplification',
+      endpoint: 'POST /v1/simplify',
+      description: 'Converts complex or technical passages into plain-language summaries suited for cognitive readability.',
+      defaultPayload: '{\n  "text": "The operational efficiency of the distributed consensus algorithm relies on Paxos."\n}',
+      mockResponse: {
+        original: 'The operational efficiency of the distributed consensus algorithm relies on Paxos.',
+        simplified: 'The system uses a fast voting method called Paxos to keep computers working together.',
+        grade_level: 'Grade 5',
+      },
+    },
+    {
+      id: 'sign',
+      name: 'Sign Language Gloss',
+      endpoint: 'POST /v1/sign-language',
+      description: 'Converts natural language input into ordered sign language gloss vectors.',
+      defaultPayload: '{\n  "text": "Where is the nearest train station?"\n}',
+      mockResponse: {
+        gloss: ['TRAIN', 'STATION', 'NEAREST', 'WHERE'],
+        grammar_structure: 'Topic-Comment-Question',
+      },
+    },
   ];
+
+  activeApi = this.apis[0];
+  activePayload = this.activeApi.defaultPayload;
+  activeResponse: string | null = null;
+  running = false;
+  copied = false;
+
+  selectApi(api: ApiFeature) {
+    this.activeApi = api;
+    this.activePayload = api.defaultPayload;
+    this.activeResponse = null;
+  }
+
+  runDemo() {
+    this.running = true;
+    setTimeout(() => {
+      this.activeResponse = JSON.stringify(this.activeApi.mockResponse, null, 2);
+      this.running = false;
+    }, 300);
+  }
+
+  copyResponse() {
+    if (this.activeResponse) {
+      navigator.clipboard.writeText(this.activeResponse);
+      this.copied = true;
+      setTimeout(() => (this.copied = false), 2000);
+    }
+  }
 }

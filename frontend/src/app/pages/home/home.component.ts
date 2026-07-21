@@ -1,132 +1,313 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, RouterLink],
   template: `
-    <section class="hero">
-      <div class="container hero-inner fade-up">
-        <span class="eyebrow">Product &amp; Technical Overview · Phase 1–3</span>
-        <h1>One orchestration layer<br />for every accessibility need.</h1>
-        <p class="lede">
-          AccessOS AI unifies scene understanding, OCR, simplification, speech, and
-          sign-language assistance behind a single endpoint — <code>POST /v1/accessibility/assist</code> —
-          plus a full accessibility-as-a-service developer platform.
-        </p>
-        <div class="hero-cta">
-          <a routerLink="/features" class="btn btn-primary">Explore the End-User App</a>
-          <a routerLink="/developer-portal" class="btn btn-ghost">View Developer APIs</a>
-        </div>
-        <div class="hero-stats">
-          <div><strong>30</strong><span>APIs referenced platform-wide</span></div>
-          <div><strong>12</strong><span>developer product APIs shipped</span></div>
-          <div><strong>1</strong><span>call site for every capability</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section model">
-      <div class="container">
-        <div class="section-head fade-up">
-          <span class="eyebrow">Why this stands out</span>
-          <h2>The old model vs. the AccessOS model</h2>
-          <p>Callers never orchestrate multiple APIs themselves — a policy engine reads request
-            context and decides which capabilities to invoke and how to fuse them.</p>
-        </div>
-        <div class="flow-compare fade-up">
-          <div class="flow old">
-            <span class="flow-label">Old model</span>
-            <div class="flow-row">
-              <span>Application</span><i>→</i><span>Accessibility Feature</span><i>→</i><span>Disabled User</span>
+    <div class="home-page">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container hero-inner">
+          <div class="hero-text">
+            <div class="eyebrow">
+              <span class="status-chip built">ANNOUNCING VERSION 2.0</span>
+              DEVELOPER-FIRST INTELLIGENCE
+            </div>
+            <h1 class="hero-title">Architecting the Future of AI Accessibility.</h1>
+            <p class="hero-desc">
+              The most reliable, high-throughput API for integrating vision, OCR, text simplification, and real-time accessibility intelligence into production apps.
+            </p>
+            <div class="hero-actions">
+              <a routerLink="/signup" class="btn btn-primary btn-lg">Get API Key</a>
+              <a routerLink="/docs" class="btn btn-ghost btn-lg">Documentation</a>
             </div>
           </div>
-          <div class="flow new">
-            <span class="flow-label">AccessOS model</span>
-            <div class="flow-row">
-              <span>Application</span><i>→</i><span>AccessOS API</span><i>→</i><span>AI Accessibility Engine</span><i>→</i><span>Adaptive Experience</span><i>→</i><span>Disabled User</span>
+
+          <!-- Code Window -->
+          <div class="hero-code-window card">
+            <div class="code-window-header">
+              <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <div class="code-lang-selector">
+                <button
+                  *ngFor="let lang of codeLangs"
+                  [class.active]="selectedLang === lang"
+                  (click)="selectedLang = lang"
+                >
+                  {{ lang }}
+                </button>
+              </div>
+            </div>
+            <div class="code-body">
+              <pre><code>{{ heroCode[selectedLang] }}</code></pre>
+            </div>
+            <div class="code-footer">
+              <span class="mono muted">Latency: 38ms</span>
+              <button class="copy-btn" (click)="copyCode()">{{ copied ? 'Copied!' : 'Copy Code' }}</button>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="section two-products">
-      <div class="container grid-2">
-        <div class="card fade-up">
-          <span class="eyebrow">Product 1</span>
-          <h3>AccessOS AI — End-User App</h3>
-          <p>An AI accessibility companion for people with visual, hearing, speech, motor,
-            or cognitive disabilities. Set preferences once; the AI Companion personalizes
-            every response to match.</p>
-          <a routerLink="/features" class="btn btn-ghost">See end-user features →</a>
+      <!-- Trust Grid -->
+      <section class="trust-section">
+        <div class="container">
+          <p class="trust-label">TRUSTED BY HIGH-GROWTH ENGINEERING TEAMS</p>
+          <div class="trust-logos">
+            <span class="trust-brand">NEXUS AI</span>
+            <span class="trust-brand">SYNAPSE</span>
+            <span class="trust-brand">DEVFLOW</span>
+            <span class="trust-brand">AETHER DATA</span>
+            <span class="trust-brand">OMNI VISION</span>
+          </div>
         </div>
-        <div class="card fade-up">
-          <span class="eyebrow">Product 2</span>
-          <h3>AccessOS Developer Platform</h3>
-          <p>Companies integrate accessibility into their own apps through one API. Manage
-            applications, generate keys, monitor usage, and pay by consumption — modeled on
-            Stripe / Twilio-style developer platforms.</p>
-          <a routerLink="/developer-portal" class="btn btn-ghost">See developer platform →</a>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="section cta-band fade-up">
-      <div class="container cta-inner">
-        <h2>Read the full technical architecture</h2>
-        <p>Service map, tech stack, API reference, and rate limiting — all in one place.</p>
-        <a routerLink="/architecture" class="btn btn-primary">View system architecture</a>
-      </div>
-    </section>
+      <!-- API Showcase -->
+      <section class="showcase-section section">
+        <div class="container">
+          <div class="section-head">
+            <div class="eyebrow">HIGH-PERFORMANCE APIs</div>
+            <h2>Built for Scale, Precision & Developer Experience</h2>
+            <p class="lede">Unified endpoints designed for enterprise applications, edge apps, and high-concurrency environments.</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="card feature-card">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10M7 12h10M7 17h6"/></svg>
+              </div>
+              <h3>Optical Character Recognition</h3>
+              <p>High-accuracy text extraction with position bounding boxes and document hierarchy parsing.</p>
+              <a routerLink="/features" class="card-link">Explore OCR API →</a>
+            </div>
+
+            <div class="card feature-card">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <h3>Vision & Scene Description</h3>
+              <p>Generates rich, contextual image descriptions and accessibility alt-text optimized for screen readers.</p>
+              <a routerLink="/features" class="card-link">Explore Vision API →</a>
+            </div>
+
+            <div class="card feature-card">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              </div>
+              <h3>Text Simplification</h3>
+              <p>Transform dense technical jargon into clear, accessible prose adjusted for cognitive reading levels.</p>
+              <a routerLink="/features" class="card-link">Explore Simplify API →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Call to Action -->
+      <section class="cta-section">
+        <div class="container text-center">
+          <div class="card cta-card vibrant-border">
+            <h2>Start Building in Minutes</h2>
+            <p class="max-w-lg mx-auto mb-6">Create a free developer account, generate your API keys, and test payloads in our playground.</p>
+            <div class="cta-buttons">
+              <a routerLink="/signup" class="btn btn-primary">Create Developer Account</a>
+              <a routerLink="/playground" class="btn btn-ghost">Open Playground</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   `,
   styles: [`
-    .hero {
-      position: relative;
-      padding: 100px 0 80px;
-      background-image: radial-gradient(circle at top right, var(--accent-soft), transparent 50%), linear-gradient(180deg, rgba(238,241,251,0.55) 0%, rgba(238,241,251,0.92) 78%, var(--bg-base) 100%), url('/assets/hero-bg.png');
-      background-size: cover;
-      background-position: center 20%;
+    .hero-section {
+      padding: 96px 0 64px;
+      border-bottom: 1px solid var(--line);
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .hero-title {
+      font-size: 56px;
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin: 16px 0 24px;
+    }
+    .hero-desc {
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      margin-bottom: 32px;
+      max-width: 540px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-lg { padding: 14px 28px; font-size: 15px; }
+
+    /* Code Window */
+    .hero-code-window {
+      background: var(--bg-deep);
+      border: 1px solid var(--line-strong);
+      box-shadow: var(--shadow-lg);
+      padding: 0;
       overflow: hidden;
     }
-    .hero-inner { max-width: 760px; }
-    .hero h1 { font-size: clamp(2rem, 4.5vw, 3.2rem); line-height: 1.1; }
-    .hero .lede { font-size: 16px; max-width: 640px; }
-    .hero-cta { display: flex; gap: 16px; margin: 32px 0 48px; flex-wrap: wrap; }
-    .hero-stats { display: flex; gap: 48px; flex-wrap: wrap; }
-    .hero-stats > div { border-left: 3px solid var(--accent); padding-left: 16px; }
-    .hero-stats strong { display: block; font-family: var(--font-display); font-size: 28px; color: var(--accent); line-height: 1.2; margin-bottom: 4px; }
-    .hero-stats span { font-size: 12px; color: var(--ink-soft); font-family: var(--font-mono); }
+    .code-window-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--line);
+    }
+    .window-dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
 
-    .fade-up { animation: fade-up var(--duration-slow) var(--ease-out) backwards; }
-    .hero-inner.fade-up { animation-delay: 0.1s; }
-    .section-head.fade-up { animation-delay: 0.1s; }
-    .flow-compare.fade-up { animation-delay: 0.2s; }
-    .card.fade-up:nth-child(1) { animation-delay: 0.1s; }
-    .card.fade-up:nth-child(2) { animation-delay: 0.2s; }
+    .code-lang-selector { display: flex; gap: 4px; }
+    .code-lang-selector button {
+      background: transparent;
+      border: none;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    .code-lang-selector button.active {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
 
-    .flow-compare { display: flex; flex-direction: column; gap: 16px; }
-    .flow { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; background: var(--bg-panel); transition: box-shadow var(--duration) var(--ease); }
-    .flow:hover { box-shadow: var(--shadow-sm); }
-    .flow.new { border-left: 4px solid var(--accent); }
-    .flow-label { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
-    .flow-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-family: var(--font-display); font-size: 16px; }
-    .flow.old .flow-row span { color: var(--ink-soft); }
-    .flow.new .flow-row span { color: var(--accent); font-weight: 600; }
-    .flow-row i { color: var(--line); font-style: normal; }
+    .code-body { padding: 20px; max-height: 280px; overflow-y: auto; }
+    .code-body pre { margin: 0; padding: 0; background: transparent; border: none; font-size: 13px; }
+    .code-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      border-top: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      cursor: pointer;
+    }
 
-    .two-products .card { cursor: pointer; transition: all var(--duration) var(--ease); }
-    .two-products .card:hover { box-shadow: var(--shadow-md); border-color: var(--accent); transform: translateY(-2px); }
-    .two-products h3 { margin-top: 12px; font-size: 20px; }
+    /* Trust Section */
+    .trust-section {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+      background: var(--bg-deep);
+    }
+    .trust-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+    }
+    .trust-logos {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .trust-brand {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.4);
+    }
 
-    .cta-band { background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-base) 100%); padding: 64px 24px; border-radius: var(--radius-xl); margin-top: 24px; margin-bottom: 24px; text-align: center; }
-    .cta-inner { max-width: 560px; margin: 0 auto; }
-    .cta-inner .btn { margin-top: 16px; }
+    /* Feature Cards */
+    .feature-card { display: flex; flex-direction: column; height: 100%; }
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+    }
+    .card-link {
+      margin-top: auto;
+      padding-top: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+    }
 
-    @media (max-width: 860px) {
-      .hero { padding: 80px 0 48px; }
+    .cta-section { padding: 64px 0 96px; }
+    .cta-card { padding: 48px; }
+    .cta-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-title { font-size: 38px; }
     }
   `],
 })
-export class HomeComponent {}
+export class HomeComponent {
+  selectedLang = 'Node.js';
+  copied = false;
+
+  codeLangs = ['Node.js', 'Python', 'cURL'];
+
+  heroCode: Record<string, string> = {
+    'Node.js': `import { AccessOS } from '@accessos/core';
+
+const client = new AccessOS({ apiKey: 'aos_live_8f3a1b...' });
+
+const result = await client.assist.process({
+  input_text: "Analyze scene and summarize accessibility requirements",
+  preferences: { reading_level: "simplified" }
+});
+
+console.log(result.primary_output.text);`,
+    Python: `import accessos
+
+client = accessos.Client(api_key="aos_live_8f3a1b...")
+
+response = client.assist.create(
+    input_text="Analyze scene and summarize accessibility requirements",
+    preferences={"reading_level": "simplified"}
+)
+
+print(response.primary_output.text)`,
+    cURL: `curl -X POST https://api.accessos.ai/v1/accessibility/assist \\
+  -H "Authorization: Bearer aos_live_8f3a1b..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "input_text": "Analyze scene and summarize accessibility requirements",
+    "preferences": { "reading_level": "simplified" }
+  }'`,
+  };
+
+  copyCode() {
+    navigator.clipboard.writeText(this.heroCode[this.selectedLang]);
+    this.copied = true;
+    setTimeout(() => (this.copied = false), 2000);
+  }
+}

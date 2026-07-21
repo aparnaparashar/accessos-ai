@@ -11,6 +11,10 @@ export function getRedis(): Redis {
     client = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
       maxRetriesPerRequest: 2,
       lazyConnect: true,
+      enableOfflineQueue: false,
+    });
+    client.on("error", () => {
+      // Gracefully swallow offline errors when Redis is not running locally
     });
   }
   return client;

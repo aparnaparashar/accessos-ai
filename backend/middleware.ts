@@ -32,14 +32,27 @@ function allowedOrigins(): string[] {
     .filter(Boolean);
 }
 
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return false;
+  const allowed = allowedOrigins();
+  if (allowed.includes("*") || allowed.includes(origin)) return true;
+  // Allow any localhost / 127.0.0.1 origin during local development
+  if (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return true;
+  }
+  return false;
+}
+
 function applyCors(req: NextRequest, res: NextResponse) {
   const origin = req.headers.get("origin");
-  const allowed = allowedOrigins();
 
-  if (origin && allowed.includes(origin)) {
+  if (origin && isOriginAllowed(origin)) {
     res.headers.set("Access-Control-Allow-Origin", origin);
     res.headers.set("Vary", "Origin");
+  } else if (!origin) {
+    res.headers.set("Access-Control-Allow-Origin", "*");
   }
+
   res.headers.set("Access-Control-Allow-Credentials", "true");
   res.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
   res.headers.set(
@@ -61,10 +74,7 @@ function applySecurityHeaders(res: NextResponse) {
 
 export function middleware(req: NextRequest) {
   // Preflight: the browser sends OPTIONS before any cross-origin request
-  // that carries a JSON body or custom header (Authorization, etc). Route
-  // handlers below never define an OPTIONS export, so without this early
-  // return Next would fall through to a 405 and the browser would treat
-  // that as a CORS failure and never send the real request at all.
+  // that carries a JSON body or custom header (Authorization, etc).
   if (req.method === "OPTIONS") {
     const res = new NextResponse(null, { status: 204 });
     return applySecurityHeaders(applyCors(req, res));
@@ -75,5 +85,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/v1/:path*", "/api/:path*", "/health/:path*"],
 };

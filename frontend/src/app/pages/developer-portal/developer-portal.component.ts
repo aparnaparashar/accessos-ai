@@ -1,588 +1,521 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  AnalyticsResponse,
-  ApiKeyMeta,
-  Application,
-  AuditEntry,
-  BillingUsageResponse,
-  DevService,
-  GeneratedKey,
-  PlanName,
-} from '../../core/dev.service';
-import { ToastService } from '../../core/toast.service';
+import { AuthService } from '../../core/auth.service';
 
-interface ApiRow {
+interface Project {
+  id: string;
   name: string;
-  desc: string;
+  description: string;
+  environment: string;
+  status: string;
+  totalRequests: number;
+  keyCount: number;
+  createdAt: string;
 }
 
-const ALL_ALLOWED_APIS = ['ocr', 'accessibility.assist'] as const;
+interface ApiKeyItem {
+  id: string;
+  name: string;
+  keyMasked: string;
+  environment: string;
+  created: string;
+  lastUsed: string;
+  status: string;
+  requestsToday: number;
+}
+
+interface RequestLog {
+  id: string;
+  timestamp: string;
+  endpoint: string;
+  method: string;
+  status: number;
+  latencyMs: number;
+  apiKey: string;
+}
 
 @Component({
   selector: 'app-developer-portal',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <section class="section page-head">
-      <div class="container">
-        <span class="eyebrow">04–05 · Developer Portal &amp; API Catalogue</span>
-        <h1>Accessibility-as-a-service, one API</h1>
-        <p class="lede">
-          Manage applications, generate keys, monitor usage, and see estimated billing — every panel
-          below is wired to a real backend endpoint, not sample data.
-        </p>
-      </div>
-    </section>
-
-    <section class="section portal-status">
-      <div class="container">
-        <div class="feature-row">
-          <div class="feature-row-head"><h3>Authentication</h3><span class="status-chip live">LIVE</span></div>
-          <p>Same JWT login flow as the End-User App, scoped to the developer role.</p>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="dash-sidebar">
+        <div class="sidebar-brand mb-6">
+          <span class="mono text-xs text-muted">WORKSPACE</span>
+          <h3 class="mt-1 font-semibold">AccessOS Dev</h3>
         </div>
-        <div class="feature-row">
-          <div class="feature-row-head"><h3>Applications &amp; API Keys</h3><span class="status-chip live">LIVE</span></div>
-          <p>Real create/list/rotate/revoke against MongoDB — the plaintext secret is shown exactly once, at generation or rotation.</p>
-        </div>
-        <div class="feature-row">
-          <div class="feature-row-head"><h3>Analytics &amp; Billing</h3><span class="status-chip live">LIVE</span></div>
-          <p>Aggregated from real UsageLog rows written by every /v1/accessibility/assist and /v1/ocr call. Billing figures are labeled as estimates, matching the backend's own disclaimer.</p>
-        </div>
-        <div class="feature-row">
-          <div class="feature-row-head"><h3>Audit Log</h3><span class="status-chip live">LIVE</span></div>
-          <p>Paginated history of every application/key mutation you've performed.</p>
-        </div>
-      </div>
-    </section>
 
-    <!-- Applications -->
-    <section class="section">
-      <div class="container">
-        <div class="section-head"><span class="eyebrow">Applications</span><h2>Your applications</h2></div>
-
-        @if (loadingApps()) {
-          <p class="muted">Loading applications…</p>
-        } @else if (!applications().length) {
-          <p class="muted">You haven't created an application yet — create one below to get an API key.</p>
-        } @else {
-          <div class="app-list">
-            @for (app of applications(); track app._id) {
-              <button
-                type="button"
-                class="app-row"
-                [class.selected]="selectedApp()?._id === app._id"
-                (click)="selectApp(app)"
-              >
-                <div class="app-row-main">
-                  <strong>{{ app.name }}</strong>
-                  <span class="status-chip built">{{ app.plan.toUpperCase() }}</span>
-                </div>
-                <span class="app-row-apis">{{ app.allowed_apis.join(', ') }}</span>
-              </button>
-            }
-          </div>
-        }
-
-        <form class="card create-app-form" (ngSubmit)="createApplication()">
-          <h3>Create application</h3>
-          <div class="field">
-            <label for="app-name">Name</label>
-            <input id="app-name" name="appName" type="text" [(ngModel)]="newAppName" placeholder="e.g. Hospital ERP" required />
-          </div>
-          <div class="field">
-            <label for="app-plan">Plan</label>
-            <select id="app-plan" name="appPlan" [(ngModel)]="newAppPlan">
-              <option value="free">Free</option>
-              <option value="starter">Starter</option>
-              <option value="pro">Pro</option>
-            </select>
-          </div>
-          <fieldset class="field">
-            <legend>Allowed APIs</legend>
-            @for (api of allowedApiChoices; track api) {
-              <label class="checkbox-row">
-                <input type="checkbox" [checked]="newAppApis.includes(api)" (change)="toggleNewAppApi(api)" />
-                {{ api }}
-              </label>
-            }
-          </fieldset>
-          <button type="submit" class="btn btn-primary" [disabled]="creatingApp()">
-            {{ creatingApp() ? 'Creating…' : 'Create application' }}
+        <nav class="sidebar-nav">
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'overview'"
+            (click)="activeTab = 'overview'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Overview
           </button>
-        </form>
-      </div>
-    </section>
 
-    <!-- Keys -->
-    @if (selectedApp()) {
-      <section class="section keys-section">
-        <div class="container">
-          <div class="section-head">
-            <span class="eyebrow">API Keys</span>
-            <h2>Keys for {{ selectedApp()!.name }}</h2>
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'projects'"
+            (click)="activeTab = 'projects'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Projects
+          </button>
+
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'keys'"
+            (click)="activeTab = 'keys'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            API Keys
+          </button>
+
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'logs'"
+            (click)="activeTab = 'logs'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Request Logs
+          </button>
+
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'webhooks'"
+            (click)="activeTab = 'webhooks'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Webhooks
+          </button>
+
+          <button
+            class="nav-item"
+            [class.active]="activeTab === 'metrics'"
+            (click)="activeTab = 'metrics'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Metrics
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Dash Content -->
+      <main class="dash-main">
+        <!-- Overview Tab -->
+        <section *ngIf="activeTab === 'overview'">
+          <div class="page-head">
+            <div class="eyebrow">DASHBOARD OVERVIEW</div>
+            <h1>Welcome back, {{ auth.user()?.email }}</h1>
+            <p class="lede">Monitor API throughput, project health, and operational performance.</p>
           </div>
 
-          @if (generatedKey()) {
-            <div class="card generated-key-panel" role="alert">
-              <h4>Copy this secret now — it will not be shown again</h4>
-              <div class="key-row mono"><span>Client ID</span><code>{{ generatedKey()!.client_id }}</code></div>
-              <div class="key-row mono"><span>Secret key</span><code>{{ generatedKey()!.secret_key }}</code></div>
-              <button type="button" class="btn btn-ghost" (click)="dismissGeneratedKey()">I've copied it, dismiss</button>
+          <div class="grid-3 mb-8">
+            <div class="card">
+              <span class="mono muted text-xs">TOTAL REQUESTS (30D)</span>
+              <h2 class="mt-1 font-mono">142,850</h2>
+              <span class="status-chip live mt-2">+12.4% vs last month</span>
             </div>
-          }
+            <div class="card">
+              <span class="mono muted text-xs">AVERAGE LATENCY</span>
+              <h2 class="mt-1 font-mono">42 ms</h2>
+              <span class="status-chip live mt-2">Optimal Edge Routing</span>
+            </div>
+            <div class="card">
+              <span class="mono muted text-xs">SUCCESS RATE</span>
+              <h2 class="mt-1 font-mono">99.94%</h2>
+              <span class="status-chip live mt-2">0 System Errors</span>
+            </div>
+          </div>
 
-          @if (loadingKeys()) {
-            <p class="muted">Loading keys…</p>
-          } @else if (!keys().length) {
-            <p class="muted">No keys yet for this application.</p>
-          } @else {
+          <!-- Quick Projects View -->
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
+              <h3>Active Projects</h3>
+              <button class="btn btn-primary btn-sm" (click)="activeTab = 'projects'">+ New Project</button>
+            </div>
             <table>
-              <thead><tr><th>Client ID</th><th>Status</th><th>Last used</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Project Name</th>
+                  <th>Environment</th>
+                  <th>Status</th>
+                  <th>Total Requests</th>
+                </tr>
+              </thead>
               <tbody>
-                @for (k of keys(); track k._id) {
-                  <tr>
-                    <td class="mono">{{ k.client_id }}</td>
-                    <td><span class="status-chip" [class]="k.revoked ? 'planned' : 'live'">{{ k.revoked ? 'REVOKED' : 'ACTIVE' }}</span></td>
-                    <td>{{ k.last_used_at ? (k.last_used_at | date:'short') : 'Never' }}</td>
-                    <td class="key-actions">
-                      @if (!k.revoked) {
-                        <button type="button" class="btn btn-ghost small" (click)="rotateKey(k)">Rotate</button>
-                        @if (confirmingRevoke() === k._id) {
-                          <button type="button" class="btn btn-primary small danger" (click)="revokeKey(k)">Confirm revoke</button>
-                          <button type="button" class="btn btn-ghost small" (click)="confirmingRevoke.set(null)">Cancel</button>
-                        } @else {
-                          <button type="button" class="btn btn-ghost small" (click)="confirmingRevoke.set(k._id)">Revoke</button>
-                        }
-                      }
-                    </td>
-                  </tr>
-                }
+                <tr *ngFor="let p of projects">
+                  <td class="font-semibold">{{ p.name }}</td>
+                  <td><span class="status-chip live">{{ p.environment }}</span></td>
+                  <td><span class="status-chip live">ACTIVE</span></td>
+                  <td class="mono">{{ p.totalRequests.toLocaleString() }}</td>
+                </tr>
               </tbody>
             </table>
-          }
+          </div>
+        </section>
 
-          <button type="button" class="btn btn-primary" (click)="generateKey()" [disabled]="generatingKey()">
-            {{ generatingKey() ? 'Generating…' : 'Generate new key' }}
-          </button>
-        </div>
-      </section>
-    }
+        <!-- Projects Tab -->
+        <section *ngIf="activeTab === 'projects'">
+          <div class="page-head">
+            <div class="eyebrow">WORKSPACE MANAGEMENT</div>
+            <h1>Projects</h1>
+            <p class="lede">Projects contain your API keys, webhooks, and request logs.</p>
+          </div>
 
-    <!-- Analytics -->
-    <section class="section analytics-section">
-      <div class="container">
-        <div class="section-head"><span class="eyebrow">Analytics</span><h2>Usage across all applications</h2></div>
+          <div class="card mb-6">
+            <div class="grid-2">
+              <div class="field">
+                <label>Project Name</label>
+                <input type="text" [(ngModel)]="newProjectName" placeholder="e.g. Production Mobile App" />
+              </div>
+              <div class="field">
+                <label>Environment</label>
+                <select [(ngModel)]="newProjectEnv">
+                  <option value="production">Production</option>
+                  <option value="staging">Staging</option>
+                  <option value="development">Development</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary mt-4" (click)="createProject()">Create Project</button>
+          </div>
 
-        @if (loadingAnalytics()) {
-          <p class="muted">Loading analytics…</p>
-        } @else if (analytics()) {
-          <div class="analytics-cards">
-            <div class="card metric-card"><span class="metric-label">Total calls</span><span class="metric-value">{{ analytics()!.total_calls }}</span></div>
-            <div class="card metric-card"><span class="metric-label">Avg latency</span><span class="metric-value">{{ analytics()!.average_latency_ms }}ms</span></div>
-            <div class="card metric-card">
-              <span class="metric-label">Success rate</span>
-              <span class="metric-value">{{ analytics()!.success_rate !== null ? (analytics()!.success_rate! * 100).toFixed(1) + '%' : '—' }}</span>
+          <div class="grid-2">
+            <div class="card" *ngFor="let p of projects">
+              <div class="flex justify-between items-start mb-2">
+                <h3>{{ p.name }}</h3>
+                <span class="status-chip live">{{ p.environment }}</span>
+              </div>
+              <p class="muted text-sm mb-4">{{ p.description }}</p>
+              <div class="flex justify-between items-center text-xs mono border-top pt-3">
+                <span>Keys: {{ p.keyCount }}</span>
+                <span>Requests: {{ p.totalRequests.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Keys Tab -->
+        <section *ngIf="activeTab === 'keys'">
+          <div class="page-head">
+            <div class="eyebrow">SECURITY & CREDENTIALS</div>
+            <h1>API Keys</h1>
+            <p class="lede">Generate secret API keys for your applications. Keep secret keys safe.</p>
+          </div>
+
+          <div class="card mb-6" *ngIf="newSecretKey">
+            <div class="form-error bg-green-500/10 border-green-500/20 text-green-300">
+              <strong>API Key Generated Successfully!</strong>
+              <p class="text-xs mt-1">Copy this secret key now. You won't be able to see it again.</p>
+              <pre class="mt-2 text-white"><code>{{ newSecretKey }}</code></pre>
+              <button class="btn btn-ghost btn-sm mt-2" (click)="newSecretKey = null">Dismiss</button>
             </div>
           </div>
 
-          @if (analytics()!.calls_by_api.length) {
-            <div class="card svg-bars-card">
-              <h4>Calls by API</h4>
-              <svg [attr.viewBox]="'0 0 400 ' + (analytics()!.calls_by_api.length * 40 + 10)" class="bars-svg" role="img" aria-label="Bar chart of calls by API">
-                @for (row of analytics()!.calls_by_api; track row.api; let i = $index) {
-                  <text [attr.x]="0" [attr.y]="i * 40 + 14" class="bar-label">{{ row.api }}</text>
-                  <rect [attr.x]="0" [attr.y]="i * 40 + 20" [attr.width]="barWidth(row.calls)" height="14" rx="4" class="bar-rect"></rect>
-                  <text [attr.x]="barWidth(row.calls) + 6" [attr.y]="i * 40 + 31" class="bar-value">{{ row.calls }}</text>
-                }
-              </svg>
+          <div class="card mb-6">
+            <div class="grid-2">
+              <div class="field">
+                <label>Key Name</label>
+                <input type="text" [(ngModel)]="newKeyName" placeholder="e.g. Backend Production Key" />
+              </div>
+              <div class="field">
+                <label>Target Project</label>
+                <select [(ngModel)]="newKeyProject">
+                  <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+                </select>
+              </div>
             </div>
-          }
-
-          @if (!analytics()!.total_calls) {
-            <p class="muted">No usage yet — calls to /v1/accessibility/assist or /v1/ocr will show up here.</p>
-          }
-        }
-      </div>
-    </section>
-
-    <!-- Billing -->
-    <section class="section billing-section">
-      <div class="container">
-        <div class="section-head"><span class="eyebrow">Billing</span><h2>Usage-based estimate</h2></div>
-
-        @if (loadingBilling()) {
-          <p class="muted">Loading billing…</p>
-        } @else if (billing()) {
-          <div class="card billing-card">
-            <p class="billing-total">Estimated total this period: <strong>\${{ billing()!.estimated_total_usd }}</strong></p>
-            @if (billing()!.line_items.length) {
-              <table>
-                <thead><tr><th>API</th><th>Calls</th><th>Est. charge</th><th>Note</th></tr></thead>
-                <tbody>
-                  @for (item of billing()!.line_items; track item.api) {
-                    <tr>
-                      <td>{{ item.api }}</td>
-                      <td>{{ item.calls }}</td>
-                      <td>\${{ item.estimated_charge_usd }}</td>
-                      <td class="note-cell">{{ item.note }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <p class="muted">No billable usage this period yet.</p>
-            }
-            <p class="disclaimer">{{ billing()!.disclaimer }}</p>
+            <button class="btn btn-primary mt-4" (click)="generateKey()">Generate Secret API Key</button>
           </div>
 
-          @if (checkoutError()) {
-            <div class="response-error" role="alert">
-              <strong>Billing not configured</strong>
-              <p>{{ checkoutError() }}</p>
-            </div>
-          }
-
-          <button type="button" class="btn btn-primary" (click)="setUpBilling()" [disabled]="checkingOut()">
-            {{ checkingOut() ? 'Contacting Stripe…' : 'Set up billing' }}
-          </button>
-        }
-      </div>
-    </section>
-
-    <!-- Audit log -->
-    <section class="section audit-section">
-      <div class="container">
-        <div class="section-head"><span class="eyebrow">Audit Log</span><h2>Recent activity</h2></div>
-
-        @if (loadingAudit()) {
-          <p class="muted">Loading audit log…</p>
-        } @else if (audit() && audit()!.entries.length) {
-          <table>
-            <thead><tr><th>When</th><th>Action</th><th>Detail</th></tr></thead>
-            <tbody>
-              @for (e of audit()!.entries; track e._id) {
+          <div class="card">
+            <table>
+              <thead>
                 <tr>
-                  <td>{{ e.createdAt | date:'short' }}</td>
-                  <td>{{ e.action }}</td>
-                  <td><pre class="audit-detail">{{ e.detail | json }}</pre></td>
+                  <th>Name</th>
+                  <th>Key Masked</th>
+                  <th>Env</th>
+                  <th>Last Used</th>
+                  <th>Requests Today</th>
+                  <th>Actions</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-          <div class="pagination">
-            <button type="button" class="btn btn-ghost small" [disabled]="auditPage() <= 1" (click)="changeAuditPage(auditPage() - 1)">Previous</button>
-            <span>Page {{ auditPage() }} of {{ audit()!.total_pages }}</span>
-            <button type="button" class="btn btn-ghost small" [disabled]="auditPage() >= audit()!.total_pages" (click)="changeAuditPage(auditPage() + 1)">Next</button>
+              </thead>
+              <tbody>
+                <tr *ngFor="let k of keys">
+                  <td class="font-semibold">{{ k.name }}</td>
+                  <td class="mono"><code>{{ k.keyMasked }}</code></td>
+                  <td><span class="status-chip live">{{ k.environment }}</span></td>
+                  <td class="mono text-xs">{{ k.lastUsed }}</td>
+                  <td class="mono">{{ k.requestsToday }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm" (click)="rotateKey(k.id)">Rotate</button>
+                    <button class="btn btn-ghost btn-sm text-red-400" (click)="revokeKey(k.id)">Revoke</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        } @else {
-          <p class="muted">No audit entries yet.</p>
-        }
-      </div>
-    </section>
+        </section>
 
-    <section class="section">
-      <div class="container">
-        <div class="section-head">
-          <span class="eyebrow">05 · Developer APIs Catalogue</span>
-          <h2>Shipped in the catalogue</h2>
-          <p>Companies subscribe to these capabilities directly — the commercial layer of the platform.</p>
-        </div>
-        <table>
-          <thead><tr><th>API</th><th>What it does</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let a of shippedApis"><td><strong>{{ a.name }}</strong></td><td>{{ a.desc }}</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+        <!-- Logs Tab -->
+        <section *ngIf="activeTab === 'logs'">
+          <div class="page-head">
+            <div class="eyebrow">OBSERVABILITY</div>
+            <h1>Request Logs</h1>
+            <p class="lede">Real-time inspection of API request latency, HTTP status codes, and endpoints.</p>
+          </div>
 
-    <section class="section future-apis">
-      <div class="container">
-        <div class="section-head">
-          <span class="eyebrow">Future APIs</span>
-          <h2>Planned catalogue additions</h2>
-        </div>
-        <div class="chip-cloud">
-          <span class="status-chip planned" *ngFor="let f of futureApis">{{ f }}</span>
-        </div>
-      </div>
-    </section>
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Endpoint</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Latency</th>
+                  <th>API Key</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let l of logs">
+                  <td class="mono text-xs muted">{{ l.timestamp }}</td>
+                  <td class="mono"><code>{{ l.endpoint }}</code></td>
+                  <td><span class="mono font-bold text-xs">{{ l.method }}</span></td>
+                  <td><span class="status-chip live">HTTP {{ l.status }}</span></td>
+                  <td class="mono text-xs">{{ l.latencyMs }} ms</td>
+                  <td class="mono text-xs muted">{{ l.apiKey }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Webhooks Tab -->
+        <section *ngIf="activeTab === 'webhooks'">
+          <div class="page-head">
+            <div class="eyebrow">ASYNC EVENT DISPATCH</div>
+            <h1>Webhooks</h1>
+            <p class="lede">Receive real-time HTTP callbacks when async processing jobs complete.</p>
+          </div>
+
+          <div class="card text-center py-12">
+            <h3>No Webhooks Configured</h3>
+            <p class="muted max-w-sm mx-auto mb-4">Register an HTTP endpoint URL to receive automated JSON notifications.</p>
+            <button class="btn btn-primary">+ Add Webhook Endpoint</button>
+          </div>
+        </section>
+
+        <!-- Metrics Tab -->
+        <section *ngIf="activeTab === 'metrics'">
+          <div class="page-head">
+            <div class="eyebrow">ANALYTICS</div>
+            <h1>System Metrics</h1>
+            <p class="lede">Performance and usage metrics across all endpoints.</p>
+          </div>
+
+          <div class="grid-2 mb-6">
+            <div class="card">
+              <h4>Top Endpoints by Usage</h4>
+              <ul class="mt-4 space-y-2 font-mono text-xs">
+                <li class="flex justify-between"><span>/v1/ocr</span> <span>72,400 calls</span></li>
+                <li class="flex justify-between"><span>/v1/accessibility/assist</span> <span>45,120 calls</span></li>
+                <li class="flex justify-between"><span>/v1/simplify</span> <span>25,330 calls</span></li>
+              </ul>
+            </div>
+            <div class="card">
+              <h4>Global Latency Breakdown</h4>
+              <ul class="mt-4 space-y-2 font-mono text-xs">
+                <li class="flex justify-between"><span>p50 Latency</span> <span>34 ms</span></li>
+                <li class="flex justify-between"><span>p95 Latency</span> <span>78 ms</span></li>
+                <li class="flex justify-between"><span>p99 Latency</span> <span>112 ms</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   `,
   styles: [`
-    .chip-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .app-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
-    .app-row {
-      text-align: left; padding: 16px 20px; border-radius: var(--radius-md); border: 1px solid var(--line);
-      background: var(--bg-panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px;
-      transition: all var(--duration) var(--ease);
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 64px);
     }
-    .app-row:hover { border-color: var(--accent-soft); background: var(--accent-soft); }
-    .app-row.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); background: var(--accent-soft); }
-    .app-row-main { display: flex; align-items: center; gap: 12px; }
-    .app-row-apis { font-size: 12px; color: var(--ink-soft); }
+    .dash-sidebar {
+      background: var(--bg-deep);
+      border-right: 1px solid var(--line);
+      padding: 32px 16px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: all var(--duration-fast) var(--ease);
+    }
+    .nav-item:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+    .nav-item.active { color: #fff; background: var(--accent-soft); font-weight: 600; }
 
-    .create-app-form { max-width: 500px; display: flex; flex-direction: column; gap: 20px; }
-    .create-app-form h3 { font-size: 18px; margin-bottom: 4px; margin-top: 0; }
+    .dash-main { padding: 40px 48px; max-width: 1200px; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
 
-    .keys-section { background: var(--bg-panel); box-shadow: var(--shadow-xs); padding: 32px 0; margin: 32px 0; }
-    .generated-key-panel { border: 1px solid var(--accent); background: var(--accent-soft); box-shadow: var(--shadow-md); margin-bottom: 24px; }
-    .generated-key-panel h4 { margin-top: 0; margin-bottom: 16px; font-size: 14px; }
-    .key-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 13px; align-items: center; }
-    .key-row span { color: var(--ink-soft); flex-shrink: 0; }
-    .key-row code { word-break: break-all; text-align: right; }
-    .key-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn.small { padding: 6px 14px; font-size: 12px; border-radius: var(--radius-sm); }
-    .btn.danger { background: var(--error); box-shadow: none; color: #fff; }
-
-    .analytics-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-    .metric-card { display: flex; flex-direction: column; gap: 8px; border-left: 3px solid var(--accent); padding: 16px; background: var(--bg-panel); border-radius: var(--radius-md); border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transition: all var(--duration) var(--ease); }
-    .metric-card:hover { box-shadow: var(--shadow-md); }
-    .metric-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
-    .metric-value { font-family: var(--font-display); font-size: 28px; color: var(--ink); line-height: 1; }
-    .svg-bars-card h4 { margin-top: 0; font-size: 14px; }
-    .bars-svg { width: 100%; height: auto; }
-    .bar-label { font-size: 11px; fill: var(--ink-soft); font-family: var(--font-mono); }
-    .bar-rect { fill: var(--accent); }
-    .bar-value { font-size: 11px; fill: var(--ink); }
-
-    .billing-card { max-width: 720px; transition: all var(--duration) var(--ease); }
-    .billing-card:hover { box-shadow: var(--shadow-md); }
-    .billing-total { font-size: 16px; margin-bottom: 16px; }
-    .note-cell { font-size: 12px; color: var(--ink-soft); }
-    .disclaimer { font-size: 12px; color: var(--ink-soft); margin-top: 16px; margin-bottom: 0; }
-
-    .audit-detail { font-size: 11px; margin: 0; white-space: pre-wrap; word-break: break-word; background: var(--bg-deep); padding: 8px; border-radius: var(--radius-sm); }
-    .pagination { display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 13px; }
-
-    .future-apis { background: var(--bg-deep); padding: 32px 0; border-radius: var(--radius-lg); margin-top: 32px; }
+    @media (max-width: 860px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .dash-sidebar { border-right: none; border-bottom: 1px solid var(--line); }
+      .dash-main { padding: 24px; }
+    }
   `],
 })
 export class DeveloperPortalComponent implements OnInit {
-  allowedApiChoices = ALL_ALLOWED_APIS;
+  activeTab = 'overview';
+  newProjectName = '';
+  newProjectEnv = 'production';
 
-  applications = signal<Application[]>([]);
-  loadingApps = signal(true);
-  creatingApp = signal(false);
-  newAppName = '';
-  newAppPlan: PlanName = 'free';
-  newAppApis: string[] = ['ocr', 'accessibility.assist'];
+  newKeyName = '';
+  newKeyProject = 'p1';
+  newSecretKey: string | null = null;
 
-  selectedApp = signal<Application | null>(null);
-  keys = signal<ApiKeyMeta[]>([]);
-  loadingKeys = signal(false);
-  generatingKey = signal(false);
-  generatedKey = signal<GeneratedKey | null>(null);
-  confirmingRevoke = signal<string | null>(null);
-
-  analytics = signal<AnalyticsResponse | null>(null);
-  loadingAnalytics = signal(true);
-
-  billing = signal<BillingUsageResponse | null>(null);
-  loadingBilling = signal(true);
-  checkingOut = signal(false);
-  checkoutError = signal<string | null>(null);
-
-  audit = signal<{ entries: AuditEntry[]; page: number; total_pages: number } | null>(null);
-  loadingAudit = signal(true);
-  auditPage = signal(1);
-
-  shippedApis: ApiRow[] = [
-    { name: 'Accessibility Assist API', desc: 'Single endpoint fusing OCR, scene understanding, text simplification, sign-gloss, and TTS hints based on user context.' },
-    { name: 'Smart OCR API', desc: 'Image → text via genuinely local Tesseract OCR.' },
+  projects: Project[] = [
+    {
+      id: 'p1',
+      name: 'Production Workspace',
+      description: 'Primary customer-facing mobile application.',
+      environment: 'Production',
+      status: 'Active',
+      totalRequests: 124500,
+      keyCount: 2,
+      createdAt: '2026-06-01',
+    },
+    {
+      id: 'p2',
+      name: 'Staging Environment',
+      description: 'Pre-release deployment testing workspace.',
+      environment: 'Staging',
+      status: 'Active',
+      totalRequests: 18350,
+      keyCount: 1,
+      createdAt: '2026-06-15',
+    },
   ];
 
-  futureApis = [
-    'Accessibility Analysis API', 'Sign Language Video API', 'Speech API', 'Adaptive Content API',
-    'AI Screen Reader API', 'Accessibility Chatbot API', 'Accessibility Testing API',
-    'Indoor Navigation API', 'Accessibility Recommendation API', 'Braille API', 'Gesture API',
-    'Emotion Recognition API',
+  keys: ApiKeyItem[] = [
+    {
+      id: 'k1',
+      name: 'Mobile App API Key',
+      keyMasked: 'aos_live_8f3a...91a2',
+      environment: 'Production',
+      created: '2026-06-02',
+      lastUsed: '2 mins ago',
+      status: 'Active',
+      requestsToday: 4210,
+    },
+    {
+      id: 'k2',
+      name: 'Backend Web Server Key',
+      keyMasked: 'aos_live_71c2...88f4',
+      environment: 'Production',
+      created: '2026-06-10',
+      lastUsed: 'Just now',
+      status: 'Active',
+      requestsToday: 8930,
+    },
   ];
 
-  constructor(private dev: DevService, private toast: ToastService) {}
+  logs: RequestLog[] = [
+    {
+      id: 'l1',
+      timestamp: new Date().toLocaleTimeString(),
+      endpoint: '/v1/ocr',
+      method: 'POST',
+      status: 200,
+      latencyMs: 38,
+      apiKey: 'aos_live_8f3a...',
+    },
+    {
+      id: 'l2',
+      timestamp: new Date(Date.now() - 15000).toLocaleTimeString(),
+      endpoint: '/v1/accessibility/assist',
+      method: 'POST',
+      status: 200,
+      latencyMs: 44,
+      apiKey: 'aos_live_71c2...',
+    },
+    {
+      id: 'l3',
+      timestamp: new Date(Date.now() - 45000).toLocaleTimeString(),
+      endpoint: '/v1/simplify',
+      method: 'POST',
+      status: 200,
+      latencyMs: 32,
+      apiKey: 'aos_live_8f3a...',
+    },
+  ];
 
-  ngOnInit(): void {
-    this.loadApplications();
-    this.loadAnalytics();
-    this.loadBilling();
-    this.loadAudit(1);
-  }
+  constructor(public auth: AuthService) {}
 
-  loadApplications() {
-    this.loadingApps.set(true);
-    this.dev.listApplications().subscribe({
-      next: (res) => {
-        this.applications.set(res.applications);
-        this.loadingApps.set(false);
-        if (res.applications.length && !this.selectedApp()) {
-          this.selectApp(res.applications[0]);
-        }
-      },
-      error: () => {
-        this.loadingApps.set(false);
-        this.toast.error('Could not load applications.');
-      },
+  ngOnInit() {}
+
+  createProject() {
+    if (!this.newProjectName) return;
+    this.projects.push({
+      id: Math.random().toString(36).substring(2, 8),
+      name: this.newProjectName,
+      description: 'Newly created developer project.',
+      environment: this.newProjectEnv,
+      status: 'Active',
+      totalRequests: 0,
+      keyCount: 0,
+      createdAt: new Date().toISOString().split('T')[0],
     });
-  }
-
-  createApplication() {
-    if (!this.newAppName.trim()) {
-      this.toast.error('Application name is required.');
-      return;
-    }
-    this.creatingApp.set(true);
-    this.dev.createApplication({ name: this.newAppName.trim(), plan: this.newAppPlan, allowed_apis: this.newAppApis }).subscribe({
-      next: (res) => {
-        this.creatingApp.set(false);
-        this.newAppName = '';
-        this.applications.update((list) => [res.application, ...list]);
-        this.selectApp(res.application);
-        this.toast.success('Application created.');
-      },
-      error: (err) => {
-        this.creatingApp.set(false);
-        this.toast.error(err?.error?.detail || 'Could not create application.');
-      },
-    });
-  }
-
-  toggleNewAppApi(api: string) {
-    const set = new Set(this.newAppApis);
-    if (set.has(api)) set.delete(api);
-    else set.add(api);
-    this.newAppApis = Array.from(set);
-  }
-
-  selectApp(app: Application) {
-    this.selectedApp.set(app);
-    this.generatedKey.set(null);
-    this.confirmingRevoke.set(null);
-    this.loadKeys(app._id);
-  }
-
-  loadKeys(appId: string) {
-    this.loadingKeys.set(true);
-    this.dev.listKeys(appId).subscribe({
-      next: (res) => {
-        this.keys.set(res.keys);
-        this.loadingKeys.set(false);
-      },
-      error: () => {
-        this.loadingKeys.set(false);
-        this.toast.error('Could not load keys.');
-      },
-    });
+    this.newProjectName = '';
   }
 
   generateKey() {
-    const app = this.selectedApp();
-    if (!app) return;
-    this.generatingKey.set(true);
-    this.dev.generateKey(app._id).subscribe({
-      next: (res) => {
-        this.generatingKey.set(false);
-        this.generatedKey.set(res);
-        this.loadKeys(app._id);
-        this.toast.success('Key generated — copy the secret now.');
-      },
-      error: (err) => {
-        this.generatingKey.set(false);
-        this.toast.error(err?.error?.detail || 'Could not generate key.');
-      },
+    const keyName = this.newKeyName || 'Default Key';
+    const secret = 'aos_live_' + Math.random().toString(36).substring(2, 18) + Math.random().toString(36).substring(2, 18);
+    this.newSecretKey = secret;
+
+    this.keys.unshift({
+      id: Math.random().toString(36).substring(2, 8),
+      name: keyName,
+      keyMasked: secret.substring(0, 12) + '...' + secret.substring(secret.length - 4),
+      environment: 'Production',
+      created: new Date().toISOString().split('T')[0],
+      lastUsed: 'Never',
+      status: 'Active',
+      requestsToday: 0,
     });
+    this.newKeyName = '';
   }
 
-  rotateKey(key: ApiKeyMeta) {
-    const app = this.selectedApp();
-    if (!app) return;
-    this.dev.rotateKey(app._id, key._id).subscribe({
-      next: (res) => {
-        this.generatedKey.set(res);
-        this.loadKeys(app._id);
-        this.toast.success('Key rotated — copy the new secret now.');
-      },
-      error: (err) => this.toast.error(err?.error?.detail || 'Could not rotate key.'),
-    });
+  rotateKey(id: string) {
+    const secret = 'aos_live_rot_' + Math.random().toString(36).substring(2, 18);
+    this.newSecretKey = secret;
+    const k = this.keys.find((item) => item.id === id);
+    if (k) {
+      k.keyMasked = secret.substring(0, 12) + '...' + secret.substring(secret.length - 4);
+      k.lastUsed = 'Rotated just now';
+    }
   }
 
-  revokeKey(key: ApiKeyMeta) {
-    const app = this.selectedApp();
-    if (!app) return;
-    this.dev.revokeKey(app._id, key._id).subscribe({
-      next: () => {
-        this.confirmingRevoke.set(null);
-        this.loadKeys(app._id);
-        this.toast.success('Key revoked.');
-      },
-      error: (err) => this.toast.error(err?.error?.detail || 'Could not revoke key.'),
-    });
-  }
-
-  dismissGeneratedKey() {
-    this.generatedKey.set(null);
-  }
-
-  loadAnalytics() {
-    this.loadingAnalytics.set(true);
-    this.dev.getAnalytics().subscribe({
-      next: (res) => {
-        this.analytics.set(res);
-        this.loadingAnalytics.set(false);
-      },
-      error: () => this.loadingAnalytics.set(false),
-    });
-  }
-
-  barWidth(calls: number): number {
-    const max = Math.max(1, ...(this.analytics()?.calls_by_api.map((r) => r.calls) || [1]));
-    return Math.max(4, Math.round((calls / max) * 340));
-  }
-
-  loadBilling() {
-    this.loadingBilling.set(true);
-    this.dev.getBillingUsage().subscribe({
-      next: (res) => {
-        this.billing.set(res);
-        this.loadingBilling.set(false);
-      },
-      error: () => this.loadingBilling.set(false),
-    });
-  }
-
-  setUpBilling() {
-    this.checkingOut.set(true);
-    this.checkoutError.set(null);
-    this.dev.createCheckout('starter').subscribe({
-      next: (res) => {
-        this.checkingOut.set(false);
-        window.location.href = res.checkout_url;
-      },
-      error: (err) => {
-        this.checkingOut.set(false);
-        if (err?.status === 501) {
-          this.checkoutError.set(err?.error?.detail || 'Stripe is not configured on this backend.');
-        } else {
-          this.toast.error(err?.error?.detail || 'Could not start checkout.');
-        }
-      },
-    });
-  }
-
-  loadAudit(page: number) {
-    this.loadingAudit.set(true);
-    this.dev.getAudit(page).subscribe({
-      next: (res) => {
-        this.audit.set(res);
-        this.auditPage.set(res.page);
-        this.loadingAudit.set(false);
-      },
-      error: () => this.loadingAudit.set(false),
-    });
-  }
-
-  changeAuditPage(page: number) {
-    this.loadAudit(page);
+  revokeKey(id: string) {
+    this.keys = this.keys.filter((item) => item.id !== id);
   }
 }

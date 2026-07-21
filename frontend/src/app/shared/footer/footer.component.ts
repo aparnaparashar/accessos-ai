@@ -9,45 +9,45 @@ import { RouterLink } from '@angular/router';
     <footer class="foot">
       <div class="container foot-inner">
         <div class="foot-brand">
-          <div class="brand-header">
-            <img src="/assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
-            <span class="brand-name">AccessOS <b>AI</b></span>
-          </div>
-          <p>One orchestration layer for scene understanding, OCR, simplification,
-            speech, sign language, and accessibility-as-a-service.</p>
+          <span class="brand-name">AccessOS <b class="gradient-text">AI</b></span>
+          <p class="foot-desc">Developer-first AI API platform for accessibility intelligence, scene understanding, OCR, and text simplification.</p>
         </div>
         <div class="foot-cols">
           <div>
             <h4>Product</h4>
-            <a routerLink="/features">End-User App</a>
-            <a routerLink="/developer-portal">Developer Portal</a>
-            <a routerLink="/pricing">Pricing</a>
+            <a routerLink="/features">API Suite</a>
+            <a routerLink="/docs">Documentation</a>
+            <a routerLink="/playground">Playground</a>
           </div>
           <div>
-            <h4>Platform</h4>
-            <a routerLink="/architecture">System Architecture</a>
-            <a routerLink="/roadmap">Roadmap</a>
+            <h4>Company</h4>
+            <a routerLink="/about">About Us</a>
+            <a routerLink="/dashboard">Developer Dashboard</a>
+            <a routerLink="/signup">Get API Key</a>
           </div>
         </div>
       </div>
       <div class="container foot-bottom">
-        <span>© 2026 AccessOS AI · Product &amp; Technical Overview, Phase 1–3</span>
+        <span>© 2026 AccessOS AI · Developer-First Accessibility API Platform</span>
       </div>
     </footer>
   `,
   styles: [`
-    .foot { background: var(--bg-panel); padding-top: 64px; }
+    .foot { background: var(--bg-deep); border-top: 1px solid var(--line); padding-top: 64px; }
     .foot-inner { display: flex; justify-content: space-between; gap: 48px; flex-wrap: wrap; padding-bottom: 48px; }
-    .foot-brand { max-width: 340px; }
-    .brand-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .brand-logo { width: 32px; height: 32px; border-radius: var(--radius-sm); object-fit: contain; }
-    .brand-name { font-family: var(--font-display); font-size: 18px; }
-    .brand-name b { color: var(--accent); }
+    .foot-brand { max-width: 360px; }
+    .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; }
+    .gradient-text {
+      background: var(--vibrant-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .foot-desc { margin-top: 12px; font-size: 14px; color: var(--ink-muted); }
     .foot-cols { display: flex; gap: 64px; }
-    .foot-cols h4 { font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 16px; }
-    .foot-cols a { display: block; color: var(--ink-soft); font-size: 14px; margin-bottom: 8px; transition: color var(--duration) var(--ease); }
-    .foot-cols a:hover { color: var(--accent); }
-    .foot-bottom { background: var(--bg-base); padding: 20px 0; font-size: 12px; color: var(--ink-soft); font-family: var(--font-mono); }
+    .foot-cols h4 { font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 16px; }
+    .foot-cols a { display: block; color: var(--ink-soft); font-size: 14px; margin-bottom: 10px; transition: color var(--duration-fast) var(--ease); }
+    .foot-cols a:hover { color: #ffffff; }
+    .foot-bottom { border-top: 1px solid var(--line); padding: 24px 0; font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono); }
   `],
 })
 export class FooterComponent {}
