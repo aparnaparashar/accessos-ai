@@ -21,7 +21,7 @@ import { RouterLink } from '@angular/router';
               The most reliable, high-throughput API for integrating vision, OCR, text simplification, and real-time accessibility intelligence into production apps.
             </p>
             <div class="hero-actions">
-              <a routerLink="/signup" class="btn btn-primary btn-lg">Get API Key</a>
+              <a routerLink="/developer-portal" class="btn btn-primary btn-lg">Get API Key</a>
               <a routerLink="/docs" class="btn btn-ghost btn-lg">Documentation</a>
             </div>
           </div>
@@ -85,7 +85,7 @@ import { RouterLink } from '@angular/router';
               </div>
               <h3>Optical Character Recognition</h3>
               <p>High-accuracy text extraction with position bounding boxes and document hierarchy parsing.</p>
-              <a routerLink="/features" class="card-link">Explore OCR API →</a>
+              <a routerLink="/features" [queryParams]="{ feature: 'ocr' }" class="card-link">Explore OCR API →</a>
             </div>
 
             <div class="card feature-card">
@@ -94,7 +94,7 @@ import { RouterLink } from '@angular/router';
               </div>
               <h3>Vision & Scene Description</h3>
               <p>Generates rich, contextual image descriptions and accessibility alt-text optimized for screen readers.</p>
-              <a routerLink="/features" class="card-link">Explore Vision API →</a>
+              <a routerLink="/features" [queryParams]="{ feature: 'vision' }" class="card-link">Explore Vision API →</a>
             </div>
 
             <div class="card feature-card">
@@ -103,7 +103,7 @@ import { RouterLink } from '@angular/router';
               </div>
               <h3>Text Simplification</h3>
               <p>Transform dense technical jargon into clear, accessible prose adjusted for cognitive reading levels.</p>
-              <a routerLink="/features" class="card-link">Explore Simplify API →</a>
+              <a routerLink="/features" [queryParams]="{ feature: 'simplify' }" class="card-link">Explore Simplify API →</a>
             </div>
           </div>
         </div>

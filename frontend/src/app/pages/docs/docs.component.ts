@@ -1,12 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface DocSection {
-  id: string;
-  title: string;
-  category: string;
-}
-
 @Component({
   selector: 'app-docs',
   standalone: true,
@@ -31,32 +25,40 @@ interface DocSection {
 
       <!-- Main Doc Content -->
       <main class="docs-content">
-        <!-- Introduction -->
+        <!-- Overview -->
         <section *ngIf="activeSection === 'intro'" class="doc-page">
           <div class="eyebrow">DEVELOPER DOCUMENTATION</div>
-          <h1>AccessOS AI Platform Overview</h1>
+          <h1>AccessOS AI Developer API</h1>
           <p class="lede">
-            AccessOS AI is a high-throughput, developer-first AI orchestration API. It unifies computer vision, OCR, text simplification, multi-modal scene understanding, and sign-language glossing into a single API endpoint.
+            AccessOS AI provides developer-first REST APIs for computer vision, OCR, text simplification, ASL sign glossing, and multi-modal accessibility orchestration.
           </p>
 
           <div class="card doc-card">
-            <h3>Quick Start</h3>
-            <p>Send your first accessibility inference request in under 60 seconds with cURL or Node.js.</p>
+            <h3>Quick Start Request</h3>
+            <p class="mb-3 text-sm muted">Send your first inference using your Client ID and Secret API Key:</p>
             <div class="code-header">
               <span>cURL Request</span>
-              <button class="copy-btn" (click)="copyText(curlExample)">{{ copied ? 'Copied!' : 'Copy' }}</button>
+              <button class="copy-btn" (click)="copyText(quickStartCurl)">{{ copied ? '✓ Copied' : 'Copy' }}</button>
             </div>
-            <pre><code>{{ curlExample }}</code></pre>
+            <pre><code>{{ quickStartCurl }}</code></pre>
           </div>
 
           <div class="grid-2 mt-8">
             <div class="card">
-              <h3>Low Latency Edge Routing</h3>
-              <p>Sub-100ms global response times with automatic Redis caching and Edge edge-cases handling.</p>
+              <h3>Required Headers</h3>
+              <p class="text-sm muted">All product endpoints require two headers:</p>
+              <ul class="font-mono text-xs mt-2 space-y-1">
+                <li><code>Authorization: Bearer &lt;secret_key&gt;</code></li>
+                <li><code>X-Client-Id: &lt;client_id&gt;</code></li>
+              </ul>
             </div>
             <div class="card">
-              <h3>Strict Data Privacy</h3>
-              <p>Zero retention options for developer payloads. Compliant with strict accessibility standards.</p>
+              <h3>Rate Limiting & Quotas</h3>
+              <p class="text-sm muted">Daily quotas are enforced per project. Check response headers:</p>
+              <ul class="font-mono text-xs mt-2 space-y-1">
+                <li><code>X-RateLimit-Limit: 1000</code></li>
+                <li><code>X-RateLimit-Remaining: 998</code></li>
+              </ul>
             </div>
           </div>
         </section>
@@ -64,104 +66,125 @@ interface DocSection {
         <!-- Authentication -->
         <section *ngIf="activeSection === 'auth'" class="doc-page">
           <div class="eyebrow">SECURITY</div>
-          <h1>Authentication</h1>
+          <h1>Authentication & Headers</h1>
           <p class="lede">
-            All API calls to AccessOS AI require a Bearer API Token passed in the HTTP Authorization header.
+            Every request to the AccessOS AI Product APIs must include your Client ID and Secret API key obtained from your Developer Portal.
           </p>
-          <pre><code>Authorization: Bearer aos_live_8f3a1b...</code></pre>
-          <div class="note-box mt-6">
-            <strong>Key Management:</strong> API keys belong to Projects. Never expose your secret keys in browser frontend applications; invoke AccessOS AI from server environments.
+          <div class="card font-mono text-xs space-y-2 mb-6">
+            <div><strong class="text-white">Authorization:</strong> Bearer &lt;your_secret_key&gt;</div>
+            <div><strong class="text-white">X-Client-Id:</strong> &lt;your_client_id&gt;</div>
+            <div><strong class="text-white">Content-Type:</strong> application/json</div>
+          </div>
+          <div class="note-box">
+            <strong>Security Warning:</strong> API keys grant full access to your project quota. Keep secret keys in server-side environments (Node.js, Python, Go) and never expose secret keys in browser frontends.
           </div>
         </section>
 
-        <!-- APIs: OCR -->
+        <!-- API: OCR -->
         <section *ngIf="activeSection === 'ocr'" class="doc-page">
-          <div class="eyebrow">API REFERENCE</div>
+          <div class="eyebrow">PRODUCT API</div>
           <h1>Optical Character Recognition (OCR)</h1>
-          <p class="lede">
-            Extract clear, formatted text from images, scanned PDFs, or complex UI snapshots with position coordinates and reading order.
-          </p>
+          <p class="lede">Extract plain text and confidence scores from base64 images or remote image URLs.</p>
 
           <div class="endpoint-badge">
             <span class="method post">POST</span>
             <span class="url">/v1/ocr</span>
           </div>
 
-          <h3>Request Snippet</h3>
           <div class="language-selector">
-            <button
-              *ngFor="let lang of languages"
-              [class.active]="selectedLang === lang"
-              (click)="selectedLang = lang"
-            >
-              {{ lang }}
-            </button>
+            <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
           </div>
-          <pre><code>{{ getCodeSnippet('ocr', selectedLang) }}</code></pre>
+          <pre><code>{{ getCodeSnippet('ocr', selectedLang, { image_url: 'https://example.com/document.jpg' }) }}</code></pre>
 
-          <h3 class="mt-6">Response Payload</h3>
+          <h3 class="mt-6">Response (200 OK)</h3>
           <pre><code>{{ ocrResponse }}</code></pre>
         </section>
 
-        <!-- APIs: Vision -->
+        <!-- API: Vision -->
         <section *ngIf="activeSection === 'vision'" class="doc-page">
-          <div class="eyebrow">API REFERENCE</div>
-          <h1>Vision & Scene Understanding</h1>
-          <p class="lede">
-            Generate detailed visual descriptions, object detection maps, and alt-text suggestions tailored to screen readers.
-          </p>
+          <div class="eyebrow">PRODUCT API</div>
+          <h1>Vision & Scene Description</h1>
+          <p class="lede">Generate detailed visual descriptions, alt text, and tags using AI vision models.</p>
 
           <div class="endpoint-badge">
             <span class="method post">POST</span>
             <span class="url">/v1/vision</span>
           </div>
 
-          <pre><code>{{ getCodeSnippet('vision', selectedLang) }}</code></pre>
+          <div class="language-selector">
+            <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
+          </div>
+          <pre><code>{{ getCodeSnippet('vision', selectedLang, { image_url: 'https://example.com/photo.jpg', simplified: false }) }}</code></pre>
+
+          <h3 class="mt-6">Response (200 OK)</h3>
+          <pre><code>{{ visionResponse }}</code></pre>
         </section>
 
-        <!-- APIs: Assist -->
-        <section *ngIf="activeSection === 'assist'" class="doc-page">
-          <div class="eyebrow">API REFERENCE</div>
-          <h1>Universal Accessibility Assist</h1>
-          <p class="lede">
-            The core orchestration endpoint. Takes user context, image/text input, and disability preferences to output structured accessibility responses.
-          </p>
+        <!-- API: Simplify -->
+        <section *ngIf="activeSection === 'simplify'" class="doc-page">
+          <div class="eyebrow">PRODUCT API</div>
+          <h1>Text Simplification</h1>
+          <p class="lede">Convert complex or academic text to Grade 5 plain language for cognitive accessibility.</p>
 
           <div class="endpoint-badge">
             <span class="method post">POST</span>
-            <span class="url">/v1/accessibility/assist</span>
+            <span class="url">/v1/simplify</span>
           </div>
 
-          <pre><code>{{ getCodeSnippet('assist', selectedLang) }}</code></pre>
+          <div class="language-selector">
+            <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
+          </div>
+          <pre><code>{{ getCodeSnippet('simplify', selectedLang, { text: 'The mitochondria is the power house of the cell...' }) }}</code></pre>
+
+          <h3 class="mt-6">Response (200 OK)</h3>
+          <pre><code>{{ simplifyResponse }}</code></pre>
         </section>
 
-        <!-- SDKs -->
-        <section *ngIf="activeSection === 'sdks'" class="doc-page">
-          <div class="eyebrow">TOOLING</div>
-          <h1>SDKs & Client Libraries</h1>
-          <p class="lede">Official SDKs maintained by the AccessOS team.</p>
+        <!-- API: Sign Gloss -->
+        <section *ngIf="activeSection === 'sign-language'" class="doc-page">
+          <div class="eyebrow">PRODUCT API</div>
+          <h1>Sign Language Glossing</h1>
+          <p class="lede">Translate natural English text into ASL (American Sign Language) gloss tokens with grammar labels.</p>
 
-          <div class="grid-3 mt-6">
-            <div class="card sdk-card">
-              <h4>Node.js / TypeScript</h4>
-              <code>npm i @accessos/sdk</code>
-            </div>
-            <div class="card sdk-card">
-              <h4>Python</h4>
-              <code>pip install accessos</code>
-            </div>
-            <div class="card sdk-card">
-              <h4>Go</h4>
-              <code>go get github.com/accessos/accessos-go</code>
-            </div>
+          <div class="endpoint-badge">
+            <span class="method post">POST</span>
+            <span class="url">/v1/sign-language</span>
           </div>
+
+          <div class="language-selector">
+            <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
+          </div>
+          <pre><code>{{ getCodeSnippet('sign-language', selectedLang, { text: 'Where is the nearest train station?' }) }}</code></pre>
+
+          <h3 class="mt-6">Response (200 OK)</h3>
+          <pre><code>{{ signResponse }}</code></pre>
+        </section>
+
+        <!-- API: Accessibility Orchestrator -->
+        <section *ngIf="activeSection === 'accessibility'" class="doc-page">
+          <div class="eyebrow">PRODUCT API</div>
+          <h1>Accessibility Orchestrator</h1>
+          <p class="lede">Multi-modal endpoint running OCR, Vision, Simplification, and Sign Glossing in parallel.</p>
+
+          <div class="endpoint-badge">
+            <span class="method post">POST</span>
+            <span class="url">/v1/accessibility</span>
+          </div>
+
+          <div class="language-selector">
+            <button *ngFor="let lang of languages" [class.active]="selectedLang === lang" (click)="selectedLang = lang">{{ lang }}</button>
+          </div>
+          <pre><code>{{ getCodeSnippet('accessibility', selectedLang, { text: 'Take one pill before sleep.', reading_level: 'simplified' }) }}</code></pre>
+
+          <h3 class="mt-6">Response (200 OK)</h3>
+          <pre><code>{{ accessibilityResponse }}</code></pre>
         </section>
 
         <!-- Rate Limits & Errors -->
         <section *ngIf="activeSection === 'ratelimits'" class="doc-page">
           <div class="eyebrow">GOVERNANCE</div>
-          <h1>Rate Limits & Status Codes</h1>
-          <p class="lede">Standard HTTP response codes and headers returned by AccessOS AI.</p>
+          <h1>Error Codes & Statuses</h1>
+          <p class="lede">Standard HTTP status codes and error responses returned by AccessOS AI.</p>
 
           <table class="doc-table mt-6">
             <thead>
@@ -173,8 +196,8 @@ interface DocSection {
             </thead>
             <tbody>
               <tr><td>200</td><td>OK</td><td>Request processed successfully.</td></tr>
-              <tr><td>401</td><td>Unauthorized</td><td>Missing or invalid Bearer API key.</td></tr>
-              <tr><td>429</td><td>Too Many Requests</td><td>Rate limit exceeded. Check Retry-After header.</td></tr>
+              <tr><td>401</td><td>Unauthorized</td><td>Missing or invalid <code>Authorization</code> or <code>X-Client-Id</code> headers.</td></tr>
+              <tr><td>429</td><td>Too Many Requests</td><td>Daily project rate limit exceeded.</td></tr>
               <tr><td>500</td><td>Internal Error</td><td>Server execution failure.</td></tr>
             </tbody>
           </table>
@@ -276,7 +299,9 @@ interface DocSection {
       border-radius: var(--radius-sm);
       font-size: 14px;
     }
-    .sdk-card code { display: block; margin-top: 10px; font-size: 12px; }
+    .doc-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+    .doc-table th, .doc-table td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+    .doc-table th { font-family: var(--font-mono); color: var(--ink-muted); font-size: 12px; }
 
     @media (max-width: 860px) {
       .docs-container { grid-template-columns: 1fr; }
@@ -287,49 +312,76 @@ interface DocSection {
 })
 export class DocumentationComponent {
   activeSection = 'intro';
-  selectedLang = 'JavaScript';
+  selectedLang = 'cURL';
   copied = false;
 
-  languages = ['JavaScript', 'TypeScript', 'Python', 'Go', 'cURL'];
+  languages = ['cURL', 'JavaScript', 'Python'];
 
   groups = [
     {
       name: 'Getting Started',
       items: [
-        { id: 'intro', title: 'Introduction' },
+        { id: 'intro', title: 'Overview & Setup' },
         { id: 'auth', title: 'Authentication' },
       ],
     },
     {
-      name: 'API Reference',
+      name: 'Product APIs',
       items: [
         { id: 'ocr', title: 'OCR API' },
         { id: 'vision', title: 'Vision API' },
-        { id: 'assist', title: 'Accessibility Assist' },
+        { id: 'simplify', title: 'Text Simplify' },
+        { id: 'sign-language', title: 'Sign Language Gloss' },
+        { id: 'accessibility', title: 'Accessibility Orchestrator' },
       ],
     },
     {
-      name: 'Resources',
-      items: [
-        { id: 'sdks', title: 'SDKs' },
-        { id: 'ratelimits', title: 'Rate Limits & Errors' },
-      ],
+      name: 'Governance',
+      items: [{ id: 'ratelimits', title: 'Rate Limits & Errors' }],
     },
   ];
 
-  curlExample = `curl -X POST https://api.accessos.ai/v1/ocr \\
-  -H "Authorization: Bearer aos_live_12345" \\
+  quickStartCurl = `curl -X POST http://localhost:8000/v1/ocr \\
+  -H "Authorization: Bearer YOUR_SECRET_KEY" \\
+  -H "X-Client-Id: YOUR_CLIENT_ID" \\
   -H "Content-Type: application/json" \\
-  -d '{"image_url": "https://example.com/document.png"}'`;
+  -d '{"image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Tux.png/220px-Tux.png"}'`;
 
   ocrResponse = `{
-  "status": "success",
-  "text": "AccessOS AI Developer Platform",
-  "confidence": 0.992,
-  "words": [
-    { "word": "AccessOS", "bbox": [12, 45, 120, 70] },
-    { "word": "AI", "bbox": [128, 45, 160, 70] }
-  ]
+  "text": "AccessOS AI Platform",
+  "confidence": 99.4,
+  "engine": "tesseract"
+}`;
+
+  visionResponse = `{
+  "provider": "openai",
+  "description": "A high-resolution photograph showing a Linux mascot penguin standing on white background.",
+  "alt_text": "Tux the Linux mascot penguin.",
+  "tags": ["penguin", "linux", "mascot", "logo", "animal"],
+  "simplified": false
+}`;
+
+  simplifyResponse = `{
+  "provider": "openai",
+  "original": "The mitochondria is the organelle responsible for ATP synthesis...",
+  "simplified": "Mitochondria make power for cells.",
+  "grade_level": "Grade 5"
+}`;
+
+  signResponse = `{
+  "gloss": ["WHERE", "NEAREST", "TRAIN", "STATION"],
+  "grammar_structure": "Question-Location",
+  "method": "ai-gloss-openai"
+}`;
+
+  accessibilityResponse = `{
+  "response_id": "resp_9a2b8c",
+  "results": {
+    "simplified_text": { "simplified": "Take one tablet twice a day." },
+    "sign_gloss": { "gloss": ["TAKE", "ONE", "PILL", "TWICE", "DAILY"] }
+  },
+  "services_invoked": ["text-simplification", "sign-language-gloss"],
+  "latency_ms": 142
 }`;
 
   selectSection(id: string) {
@@ -342,16 +394,14 @@ export class DocumentationComponent {
     setTimeout(() => (this.copied = false), 2000);
   }
 
-  getCodeSnippet(api: string, lang: string): string {
+  getCodeSnippet(api: string, lang: string, payloadObj: object): string {
+    const jsonStr = JSON.stringify(payloadObj, null, 2);
     if (lang === 'cURL') {
-      return `curl -X POST https://api.accessos.ai/v1/${api} \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"input": "sample payload"}'`;
+      return `curl -X POST http://localhost:8000/v1/${api} \\\n  -H "Authorization: Bearer YOUR_SECRET_KEY" \\\n  -H "X-Client-Id: YOUR_CLIENT_ID" \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(payloadObj)}'`;
     }
     if (lang === 'Python') {
-      return `import accessos\n\nclient = accessos.Client(api_key="aos_live_...")\nresponse = client.${api}.create(input="sample payload")\nprint(response)`;
+      return `import requests\n\nurl = "http://localhost:8000/v1/${api}"\nheaders = {\n    "Authorization": "Bearer YOUR_SECRET_KEY",\n    "X-Client-Id": "YOUR_CLIENT_ID",\n    "Content-Type": "application/json"\n}\npayload = ${jsonStr}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.json())`;
     }
-    if (lang === 'Go') {
-      return `package main\nimport "github.com/accessos/accessos-go"\n\nfunc main() {\n    client := accessos.New("aos_live_...")\n    res, _ := client.${api}.Create("sample payload")\n}`;
-    }
-    return `import { AccessOS } from '@accessos/core';\n\nconst aos = new AccessOS('aos_live_...');\nconst res = await aos.${api}.process({ input: 'sample payload' });`;
+    return `const res = await fetch('http://localhost:8000/v1/${api}', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer YOUR_SECRET_KEY',\n    'X-Client-Id': 'YOUR_CLIENT_ID',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify(${jsonStr})\n});\nconst data = await res.json();\nconsole.log(data);`;
   }
 }

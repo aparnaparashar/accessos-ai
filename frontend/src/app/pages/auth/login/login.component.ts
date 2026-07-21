@@ -56,7 +56,7 @@ import { AuthService } from '../../../core/auth.service';
             </button>
           </form>
 
-          <p class="auth-switch">Don't have a developer account? <a routerLink="/signup">Get API Key</a></p>
+          <p class="auth-switch">Don't have a developer account? <a routerLink="/signup">Sign Up</a></p>
         </div>
       </div>
     </section>
@@ -86,7 +86,7 @@ export class LoginComponent {
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   submit() {
     this.submitted.set(true);

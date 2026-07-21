@@ -1,38 +1,48 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
+import { ApiService, ApiError } from '../../core/api.service';
 
 interface Project {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   environment: string;
   status: string;
-  totalRequests: number;
-  keyCount: number;
   createdAt: string;
 }
 
 interface ApiKeyItem {
-  id: string;
+  _id: string;
   name: string;
-  keyMasked: string;
+  client_id: string;
   environment: string;
-  created: string;
-  lastUsed: string;
-  status: string;
-  requestsToday: number;
+  last_used_at: string | null;
+  total_requests: number;
+  revoked: boolean;
+  createdAt: string;
 }
 
-interface RequestLog {
-  id: string;
-  timestamp: string;
+interface RequestLogItem {
+  _id: string;
   endpoint: string;
   method: string;
-  status: number;
-  latencyMs: number;
-  apiKey: string;
+  status_code: number;
+  latency_ms: number;
+  createdAt: string;
+  api_key?: { name: string; client_id: string };
+}
+
+interface ProjectMetrics {
+  requests_today: number;
+  weekly_requests: number;
+  monthly_requests: number;
+  total_requests: number;
+  success_rate: number;
+  average_latency_ms: number;
+  top_endpoints: Array<{ endpoint: string; requests: number; avg_latency_ms: number }>;
+  api_key_count: number;
 }
 
 @Component({
@@ -64,7 +74,7 @@ interface RequestLog {
             (click)="activeTab = 'projects'"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            Projects
+            Projects ({{ projects().length }})
           </button>
 
           <button
@@ -87,73 +97,87 @@ interface RequestLog {
 
           <button
             class="nav-item"
-            [class.active]="activeTab === 'webhooks'"
-            (click)="activeTab = 'webhooks'"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            Webhooks
-          </button>
-
-          <button
-            class="nav-item"
             [class.active]="activeTab === 'metrics'"
             (click)="activeTab = 'metrics'"
           >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Metrics
+            System Metrics
           </button>
         </nav>
       </aside>
 
       <!-- Main Dash Content -->
       <main class="dash-main">
+        <!-- Project Selector Header -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-line" *ngIf="projects().length > 0">
+          <div class="flex items-center gap-3">
+            <span class="mono text-xs muted">ACTIVE PROJECT:</span>
+            <select [(ngModel)]="selectedProjectId" (change)="onProjectSelect()" class="project-select font-semibold">
+              <option *ngFor="let p of projects()" [value]="p._id">{{ p.name }} ({{ p.environment }})</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" (click)="activeTab = 'projects'">+ New Project</button>
+        </div>
+
         <!-- Overview Tab -->
         <section *ngIf="activeTab === 'overview'">
           <div class="page-head">
             <div class="eyebrow">DASHBOARD OVERVIEW</div>
-            <h1>Welcome back, {{ auth.user()?.email }}</h1>
-            <p class="lede">Monitor API throughput, project health, and operational performance.</p>
+            <h1>Welcome back, {{ firstName }}!</h1>
+            <p class="lede">Live telemetry & project analytics loaded directly from your MongoDB database.</p>
           </div>
 
           <div class="grid-3 mb-8">
             <div class="card">
-              <span class="mono muted text-xs">TOTAL REQUESTS (30D)</span>
-              <h2 class="mt-1 font-mono">142,850</h2>
-              <span class="status-chip live mt-2">+12.4% vs last month</span>
+              <span class="mono muted text-xs">TOTAL REQUESTS</span>
+              <h2 class="mt-1 font-mono">{{ metrics()?.total_requests ?? 0 }}</h2>
+              <span class="status-chip live mt-2">MongoDB Log Aggregation</span>
             </div>
             <div class="card">
-              <span class="mono muted text-xs">AVERAGE LATENCY</span>
-              <h2 class="mt-1 font-mono">42 ms</h2>
-              <span class="status-chip live mt-2">Optimal Edge Routing</span>
+              <span class="mono muted text-xs">AVG LATENCY</span>
+              <h2 class="mt-1 font-mono">{{ metrics()?.average_latency_ms ?? 0 }} ms</h2>
+              <span class="status-chip live mt-2">Live Response Pipeline</span>
             </div>
             <div class="card">
               <span class="mono muted text-xs">SUCCESS RATE</span>
-              <h2 class="mt-1 font-mono">99.94%</h2>
-              <span class="status-chip live mt-2">0 System Errors</span>
+              <h2 class="mt-1 font-mono">{{ ((metrics()?.success_rate ?? 1.0) * 100).toFixed(1) }}%</h2>
+              <span class="status-chip live mt-2">Real-time HTTP 2xx</span>
             </div>
           </div>
 
-          <!-- Quick Projects View -->
+          <!-- Active Projects View -->
           <div class="card">
             <div class="flex justify-between items-center mb-4">
-              <h3>Active Projects</h3>
-              <button class="btn btn-primary btn-sm" (click)="activeTab = 'projects'">+ New Project</button>
+              <h3>Projects in Database ({{ projects().length }})</h3>
+              <button class="btn btn-ghost btn-sm" (click)="loadAllData()">↻ Refresh DB</button>
             </div>
-            <table>
+
+            <div *ngIf="loading()" class="py-8 text-center muted">Loading database records…</div>
+
+            <div *ngIf="!loading() && projects().length === 0" class="py-8 text-center">
+              <p class="muted mb-4">No projects stored in MongoDB yet.</p>
+              <button class="btn btn-primary" (click)="activeTab = 'projects'">Create Your First Project</button>
+            </div>
+
+            <table *ngIf="!loading() && projects().length > 0">
               <thead>
                 <tr>
                   <th>Project Name</th>
                   <th>Environment</th>
                   <th>Status</th>
-                  <th>Total Requests</th>
+                  <th>Created At</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let p of projects">
+                <tr *ngFor="let p of projects()">
                   <td class="font-semibold">{{ p.name }}</td>
                   <td><span class="status-chip live">{{ p.environment }}</span></td>
-                  <td><span class="status-chip live">ACTIVE</span></td>
-                  <td class="mono">{{ p.totalRequests.toLocaleString() }}</td>
+                  <td><span class="status-chip live">{{ p.status.toUpperCase() }}</span></td>
+                  <td class="mono text-xs muted">{{ formatDate(p.createdAt) }}</td>
+                  <td>
+                    <button class="btn btn-ghost btn-sm" (click)="selectProject(p._id)">Select</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -165,11 +189,12 @@ interface RequestLog {
           <div class="page-head">
             <div class="eyebrow">WORKSPACE MANAGEMENT</div>
             <h1>Projects</h1>
-            <p class="lede">Projects contain your API keys, webhooks, and request logs.</p>
+            <p class="lede">Manage developer workspaces. Projects isolate API keys and request logs in MongoDB.</p>
           </div>
 
           <div class="card mb-6">
-            <div class="grid-2">
+            <h3>Create New Project</h3>
+            <div class="grid-2 mt-4">
               <div class="field">
                 <label>Project Name</label>
                 <input type="text" [(ngModel)]="newProjectName" placeholder="e.g. Production Mobile App" />
@@ -183,19 +208,21 @@ interface RequestLog {
                 </select>
               </div>
             </div>
-            <button class="btn btn-primary mt-4" (click)="createProject()">Create Project</button>
+            <button class="btn btn-primary mt-4" (click)="createProject()" [disabled]="creatingProject()">
+              {{ creatingProject() ? 'Saving to Database…' : 'Create & Save to DB' }}
+            </button>
           </div>
 
           <div class="grid-2">
-            <div class="card" *ngFor="let p of projects">
+            <div class="card" *ngFor="let p of projects()">
               <div class="flex justify-between items-start mb-2">
                 <h3>{{ p.name }}</h3>
                 <span class="status-chip live">{{ p.environment }}</span>
               </div>
-              <p class="muted text-sm mb-4">{{ p.description }}</p>
+              <p class="muted text-sm mb-4">{{ p.description || 'No description provided.' }}</p>
               <div class="flex justify-between items-center text-xs mono border-top pt-3">
-                <span>Keys: {{ p.keyCount }}</span>
-                <span>Requests: {{ p.totalRequests.toLocaleString() }}</span>
+                <span class="muted">ID: {{ p._id }}</span>
+                <button class="btn btn-ghost btn-sm text-red-400" (click)="archiveProject(p._id)">Archive</button>
               </div>
             </div>
           </div>
@@ -206,56 +233,73 @@ interface RequestLog {
           <div class="page-head">
             <div class="eyebrow">SECURITY & CREDENTIALS</div>
             <h1>API Keys</h1>
-            <p class="lede">Generate secret API keys for your applications. Keep secret keys safe.</p>
+            <p class="lede">Generate secret API keys for your applications. All keys are hashed and stored in MongoDB.</p>
           </div>
 
-          <div class="card mb-6" *ngIf="newSecretKey">
-            <div class="form-error bg-green-500/10 border-green-500/20 text-green-300">
-              <strong>API Key Generated Successfully!</strong>
-              <p class="text-xs mt-1">Copy this secret key now. You won't be able to see it again.</p>
-              <pre class="mt-2 text-white"><code>{{ newSecretKey }}</code></pre>
-              <button class="btn btn-ghost btn-sm mt-2" (click)="newSecretKey = null">Dismiss</button>
+          <!-- Secret Key Alert banner -->
+          <div class="card mb-6 bg-green-900/20 border-green-500/30" *ngIf="newSecretKey()">
+            <div class="flex justify-between items-start">
+              <div>
+                <strong class="text-green-400">⚡ Secret API Key Generated!</strong>
+                <p class="text-xs muted mt-1">Copy this secret key now. It is stored securely as a SHA-256 hash in MongoDB and cannot be displayed again.</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" (click)="newSecretKey.set(null)">✕ Dismiss</button>
+            </div>
+            <div class="flex items-center gap-2 mt-3 font-mono text-xs bg-black/40 p-3 rounded border border-line">
+              <code class="flex-1 text-green-300 select-all">{{ newSecretKey() }}</code>
+              <button class="btn btn-primary btn-sm" (click)="copySecretKey()">
+                {{ keyCopied() ? '✓ Copied' : 'Copy Key' }}
+              </button>
             </div>
           </div>
 
-          <div class="card mb-6">
-            <div class="grid-2">
+          <div class="card mb-6" *ngIf="projects().length > 0">
+            <h3>Generate Secret Key</h3>
+            <div class="grid-2 mt-4">
               <div class="field">
-                <label>Key Name</label>
-                <input type="text" [(ngModel)]="newKeyName" placeholder="e.g. Backend Production Key" />
+                <label>Key Description / Name</label>
+                <input type="text" [(ngModel)]="newKeyName" placeholder="e.g. Server Backend Production Key" />
               </div>
               <div class="field">
-                <label>Target Project</label>
-                <select [(ngModel)]="newKeyProject">
-                  <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+                <label>Environment</label>
+                <select [(ngModel)]="newKeyEnv">
+                  <option value="production">Production</option>
+                  <option value="staging">Staging</option>
+                  <option value="development">Development</option>
                 </select>
               </div>
             </div>
-            <button class="btn btn-primary mt-4" (click)="generateKey()">Generate Secret API Key</button>
+            <button class="btn btn-primary mt-4" (click)="generateKey()" [disabled]="generatingKey()">
+              {{ generatingKey() ? 'Generating Key…' : 'Generate & Save Secret Key' }}
+            </button>
           </div>
 
           <div class="card">
-            <table>
+            <h3>Database API Keys ({{ keys().length }})</h3>
+            <div *ngIf="keys().length === 0" class="py-6 text-center muted">No API keys generated yet for this project.</div>
+            <table *ngIf="keys().length > 0" class="mt-4">
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Key Masked</th>
-                  <th>Env</th>
+                  <th>Client ID</th>
+                  <th>Environment</th>
                   <th>Last Used</th>
-                  <th>Requests Today</th>
+                  <th>Total Requests</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let k of keys">
+                <tr *ngFor="let k of keys()">
                   <td class="font-semibold">{{ k.name }}</td>
-                  <td class="mono"><code>{{ k.keyMasked }}</code></td>
+                  <td class="mono"><code>{{ k.client_id }}</code></td>
                   <td><span class="status-chip live">{{ k.environment }}</span></td>
-                  <td class="mono text-xs">{{ k.lastUsed }}</td>
-                  <td class="mono">{{ k.requestsToday }}</td>
+                  <td class="mono text-xs muted">{{ k.last_used_at ? formatDate(k.last_used_at) : 'Never' }}</td>
+                  <td class="mono">{{ k.total_requests }}</td>
                   <td>
-                    <button class="btn btn-ghost btn-sm" (click)="rotateKey(k.id)">Rotate</button>
-                    <button class="btn btn-ghost btn-sm text-red-400" (click)="revokeKey(k.id)">Revoke</button>
+                    <button class="btn btn-ghost btn-sm" (click)="rotateKey(k._id)" [disabled]="k.revoked">Rotate</button>
+                    <button class="btn btn-ghost btn-sm text-red-400" (click)="revokeKey(k._id)" [disabled]="k.revoked">
+                      {{ k.revoked ? 'Revoked' : 'Revoke' }}
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -268,11 +312,20 @@ interface RequestLog {
           <div class="page-head">
             <div class="eyebrow">OBSERVABILITY</div>
             <h1>Request Logs</h1>
-            <p class="lede">Real-time inspection of API request latency, HTTP status codes, and endpoints.</p>
+            <p class="lede">Real-time audit log of actual API requests recorded in MongoDB.</p>
           </div>
 
           <div class="card">
-            <table>
+            <div class="flex justify-between items-center mb-4">
+              <h3>MongoDB Log Records ({{ logs().length }})</h3>
+              <button class="btn btn-ghost btn-sm" (click)="loadLogs(selectedProjectId)">↻ Refresh Logs</button>
+            </div>
+
+            <div *ngIf="logs().length === 0" class="py-8 text-center muted">
+              No API requests logged yet for this project. Execute requests in the Playground to see live logs here.
+            </div>
+
+            <table *ngIf="logs().length > 0">
               <thead>
                 <tr>
                   <th>Timestamp</th>
@@ -280,35 +333,23 @@ interface RequestLog {
                   <th>Method</th>
                   <th>Status</th>
                   <th>Latency</th>
-                  <th>API Key</th>
+                  <th>Key Name</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let l of logs">
-                  <td class="mono text-xs muted">{{ l.timestamp }}</td>
+                <tr *ngFor="let l of logs()">
+                  <td class="mono text-xs muted">{{ formatDate(l.createdAt) }}</td>
                   <td class="mono"><code>{{ l.endpoint }}</code></td>
                   <td><span class="mono font-bold text-xs">{{ l.method }}</span></td>
-                  <td><span class="status-chip live">HTTP {{ l.status }}</span></td>
-                  <td class="mono text-xs">{{ l.latencyMs }} ms</td>
-                  <td class="mono text-xs muted">{{ l.apiKey }}</td>
+                  <td>
+                    <span class="status-chip live" *ngIf="l.status_code < 400">HTTP {{ l.status_code }}</span>
+                    <span class="status-chip planned" *ngIf="l.status_code >= 400">HTTP {{ l.status_code }}</span>
+                  </td>
+                  <td class="mono text-xs">{{ l.latency_ms }} ms</td>
+                  <td class="mono text-xs muted">{{ l.api_key?.name ?? 'Demo / JWT' }}</td>
                 </tr>
               </tbody>
             </table>
-          </div>
-        </section>
-
-        <!-- Webhooks Tab -->
-        <section *ngIf="activeTab === 'webhooks'">
-          <div class="page-head">
-            <div class="eyebrow">ASYNC EVENT DISPATCH</div>
-            <h1>Webhooks</h1>
-            <p class="lede">Receive real-time HTTP callbacks when async processing jobs complete.</p>
-          </div>
-
-          <div class="card text-center py-12">
-            <h3>No Webhooks Configured</h3>
-            <p class="muted max-w-sm mx-auto mb-4">Register an HTTP endpoint URL to receive automated JSON notifications.</p>
-            <button class="btn btn-primary">+ Add Webhook Endpoint</button>
           </div>
         </section>
 
@@ -317,24 +358,27 @@ interface RequestLog {
           <div class="page-head">
             <div class="eyebrow">ANALYTICS</div>
             <h1>System Metrics</h1>
-            <p class="lede">Performance and usage metrics across all endpoints.</p>
+            <p class="lede">Real-time analytics computed dynamically from MongoDB RequestLog collections.</p>
           </div>
 
           <div class="grid-2 mb-6">
             <div class="card">
-              <h4>Top Endpoints by Usage</h4>
-              <ul class="mt-4 space-y-2 font-mono text-xs">
-                <li class="flex justify-between"><span>/v1/ocr</span> <span>72,400 calls</span></li>
-                <li class="flex justify-between"><span>/v1/accessibility/assist</span> <span>45,120 calls</span></li>
-                <li class="flex justify-between"><span>/v1/simplify</span> <span>25,330 calls</span></li>
+              <h4>Top Endpoints by Volume</h4>
+              <div *ngIf="!metrics()?.top_endpoints?.length" class="muted text-xs mt-4">No endpoint traffic logged yet.</div>
+              <ul class="mt-4 space-y-2 font-mono text-xs" *ngIf="metrics()?.top_endpoints?.length">
+                <li class="flex justify-between" *ngFor="let e of metrics()?.top_endpoints">
+                  <span>{{ e.endpoint }}</span>
+                  <span>{{ e.requests }} calls ({{ e.avg_latency_ms }}ms avg)</span>
+                </li>
               </ul>
             </div>
             <div class="card">
-              <h4>Global Latency Breakdown</h4>
+              <h4>Project Rate Limits & Quota</h4>
               <ul class="mt-4 space-y-2 font-mono text-xs">
-                <li class="flex justify-between"><span>p50 Latency</span> <span>34 ms</span></li>
-                <li class="flex justify-between"><span>p95 Latency</span> <span>78 ms</span></li>
-                <li class="flex justify-between"><span>p99 Latency</span> <span>112 ms</span></li>
+                <li class="flex justify-between"><span>Requests Today</span> <span>{{ metrics()?.requests_today ?? 0 }}</span></li>
+                <li class="flex justify-between"><span>Weekly Total</span> <span>{{ metrics()?.weekly_requests ?? 0 }}</span></li>
+                <li class="flex justify-between"><span>Monthly Total</span> <span>{{ metrics()?.monthly_requests ?? 0 }}</span></li>
+                <li class="flex justify-between"><span>Active API Keys</span> <span>{{ metrics()?.api_key_count ?? 0 }}</span></li>
               </ul>
             </div>
           </div>
@@ -376,6 +420,11 @@ interface RequestLog {
     .dash-main { padding: 40px 48px; max-width: 1200px; }
     .btn-sm { padding: 4px 10px; font-size: 12px; }
 
+    .project-select {
+      background: var(--bg-deep); border: 1px solid var(--line); color: #fff;
+      padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; outline: none;
+    }
+
     @media (max-width: 860px) {
       .dashboard-layout { grid-template-columns: 1fr; }
       .dash-sidebar { border-right: none; border-bottom: 1px solid var(--line); }
@@ -384,138 +433,178 @@ interface RequestLog {
   `],
 })
 export class DeveloperPortalComponent implements OnInit {
+  private apiService = inject(ApiService);
+  public auth = inject(AuthService);
+
   activeTab = 'overview';
+
+  projects = signal<Project[]>([]);
+  keys = signal<ApiKeyItem[]>([]);
+  logs = signal<RequestLogItem[]>([]);
+  metrics = signal<ProjectMetrics | null>(null);
+
+  selectedProjectId = '';
+  loading = signal(false);
+
   newProjectName = '';
   newProjectEnv = 'production';
+  creatingProject = signal(false);
 
   newKeyName = '';
-  newKeyProject = 'p1';
-  newSecretKey: string | null = null;
+  newKeyEnv = 'production';
+  generatingKey = signal(false);
+  newSecretKey = signal<string | null>(null);
+  keyCopied = signal(false);
 
-  projects: Project[] = [
-    {
-      id: 'p1',
-      name: 'Production Workspace',
-      description: 'Primary customer-facing mobile application.',
-      environment: 'Production',
-      status: 'Active',
-      totalRequests: 124500,
-      keyCount: 2,
-      createdAt: '2026-06-01',
-    },
-    {
-      id: 'p2',
-      name: 'Staging Environment',
-      description: 'Pre-release deployment testing workspace.',
-      environment: 'Staging',
-      status: 'Active',
-      totalRequests: 18350,
-      keyCount: 1,
-      createdAt: '2026-06-15',
-    },
-  ];
+  get firstName(): string {
+    const user = this.auth.user();
+    if (user?.full_name && user.full_name.trim().length > 0) {
+      return user.full_name.trim().split(' ')[0];
+    }
+    if (user?.email && user.email.includes('@')) {
+      const prefix = user.email.split('@')[0];
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    }
+    return 'Developer';
+  }
 
-  keys: ApiKeyItem[] = [
-    {
-      id: 'k1',
-      name: 'Mobile App API Key',
-      keyMasked: 'aos_live_8f3a...91a2',
-      environment: 'Production',
-      created: '2026-06-02',
-      lastUsed: '2 mins ago',
-      status: 'Active',
-      requestsToday: 4210,
-    },
-    {
-      id: 'k2',
-      name: 'Backend Web Server Key',
-      keyMasked: 'aos_live_71c2...88f4',
-      environment: 'Production',
-      created: '2026-06-10',
-      lastUsed: 'Just now',
-      status: 'Active',
-      requestsToday: 8930,
-    },
-  ];
+  ngOnInit() {
+    this.loadAllData();
+  }
 
-  logs: RequestLog[] = [
-    {
-      id: 'l1',
-      timestamp: new Date().toLocaleTimeString(),
-      endpoint: '/v1/ocr',
-      method: 'POST',
-      status: 200,
-      latencyMs: 38,
-      apiKey: 'aos_live_8f3a...',
-    },
-    {
-      id: 'l2',
-      timestamp: new Date(Date.now() - 15000).toLocaleTimeString(),
-      endpoint: '/v1/accessibility/assist',
-      method: 'POST',
-      status: 200,
-      latencyMs: 44,
-      apiKey: 'aos_live_71c2...',
-    },
-    {
-      id: 'l3',
-      timestamp: new Date(Date.now() - 45000).toLocaleTimeString(),
-      endpoint: '/v1/simplify',
-      method: 'POST',
-      status: 200,
-      latencyMs: 32,
-      apiKey: 'aos_live_8f3a...',
-    },
-  ];
+  loadAllData() {
+    this.loading.set(true);
+    this.apiService.get<{ projects: Project[] }>('/v1/projects').subscribe({
+      next: (res) => {
+        const list = res.projects || [];
+        this.projects.set(list);
+        this.loading.set(false);
+        if (list.length > 0 && !this.selectedProjectId) {
+          this.selectedProjectId = list[0]._id;
+          this.onProjectSelect();
+        }
+      },
+      error: () => this.loading.set(false),
+    });
+  }
 
-  constructor(public auth: AuthService) {}
+  onProjectSelect() {
+    if (!this.selectedProjectId) return;
+    this.loadKeys(this.selectedProjectId);
+    this.loadLogs(this.selectedProjectId);
+    this.loadMetrics(this.selectedProjectId);
+  }
 
-  ngOnInit() {}
+  selectProject(id: string) {
+    this.selectedProjectId = id;
+    this.onProjectSelect();
+    this.activeTab = 'keys';
+  }
+
+  loadKeys(projectId: string) {
+    this.apiService.get<{ keys: ApiKeyItem[] }>(`/v1/projects/${projectId}/api-keys`).subscribe({
+      next: (res) => this.keys.set(res.keys || []),
+      error: () => this.keys.set([]),
+    });
+  }
+
+  loadLogs(projectId: string) {
+    this.apiService.get<{ logs: RequestLogItem[] }>(`/v1/projects/${projectId}/logs`).subscribe({
+      next: (res) => this.logs.set(res.logs || []),
+      error: () => this.logs.set([]),
+    });
+  }
+
+  loadMetrics(projectId: string) {
+    this.apiService.get<{ metrics: ProjectMetrics }>(`/v1/projects/${projectId}/metrics`).subscribe({
+      next: (res) => this.metrics.set(res.metrics),
+      error: () => this.metrics.set(null),
+    });
+  }
 
   createProject() {
-    if (!this.newProjectName) return;
-    this.projects.push({
-      id: Math.random().toString(36).substring(2, 8),
+    if (!this.newProjectName.trim()) return;
+    this.creatingProject.set(true);
+
+    this.apiService.post<{ project: Project }>('/v1/projects', {
       name: this.newProjectName,
-      description: 'Newly created developer project.',
       environment: this.newProjectEnv,
-      status: 'Active',
-      totalRequests: 0,
-      keyCount: 0,
-      createdAt: new Date().toISOString().split('T')[0],
+    }).subscribe({
+      next: (res) => {
+        this.creatingProject.set(false);
+        this.newProjectName = '';
+        this.projects.update((list) => [res.project, ...list]);
+        this.selectedProjectId = res.project._id;
+        this.onProjectSelect();
+      },
+      error: () => this.creatingProject.set(false),
     });
-    this.newProjectName = '';
+  }
+
+  archiveProject(id: string) {
+    if (!confirm('Are you sure you want to archive this project and revoke its keys?')) return;
+    this.apiService.delete(`/v1/projects/${id}`).subscribe({
+      next: () => {
+        this.projects.update((list) => list.filter((p) => p._id !== id));
+        if (this.selectedProjectId === id) {
+          const remaining = this.projects();
+          this.selectedProjectId = remaining.length > 0 ? remaining[0]._id : '';
+          this.onProjectSelect();
+        }
+      },
+    });
   }
 
   generateKey() {
-    const keyName = this.newKeyName || 'Default Key';
-    const secret = 'aos_live_' + Math.random().toString(36).substring(2, 18) + Math.random().toString(36).substring(2, 18);
-    this.newSecretKey = secret;
+    if (!this.selectedProjectId) return;
+    this.generatingKey.set(true);
 
-    this.keys.unshift({
-      id: Math.random().toString(36).substring(2, 8),
-      name: keyName,
-      keyMasked: secret.substring(0, 12) + '...' + secret.substring(secret.length - 4),
-      environment: 'Production',
-      created: new Date().toISOString().split('T')[0],
-      lastUsed: 'Never',
-      status: 'Active',
-      requestsToday: 0,
+    this.apiService.post<{ secret_key: string }>(`/v1/projects/${this.selectedProjectId}/api-keys`, {
+      name: this.newKeyName || 'Default Key',
+      environment: this.newKeyEnv,
+    }).subscribe({
+      next: (res) => {
+        this.generatingKey.set(false);
+        this.newKeyName = '';
+        this.newSecretKey.set(res.secret_key);
+        this.loadKeys(this.selectedProjectId);
+      },
+      error: () => this.generatingKey.set(false),
     });
-    this.newKeyName = '';
   }
 
-  rotateKey(id: string) {
-    const secret = 'aos_live_rot_' + Math.random().toString(36).substring(2, 18);
-    this.newSecretKey = secret;
-    const k = this.keys.find((item) => item.id === id);
-    if (k) {
-      k.keyMasked = secret.substring(0, 12) + '...' + secret.substring(secret.length - 4);
-      k.lastUsed = 'Rotated just now';
+  rotateKey(keyId: string) {
+    if (!this.selectedProjectId || !confirm('Rotate secret key? Existing secret will stop working immediately.')) return;
+    this.apiService.post<{ secret_key: string }>(`/v1/projects/${this.selectedProjectId}/api-keys/${keyId}/rotate`, {}).subscribe({
+      next: (res) => {
+        this.newSecretKey.set(res.secret_key);
+        this.loadKeys(this.selectedProjectId);
+      },
+    });
+  }
+
+  revokeKey(keyId: string) {
+    if (!this.selectedProjectId || !confirm('Revoke this key? Access using this key will be permanently blocked.')) return;
+    this.apiService.delete(`/v1/projects/${this.selectedProjectId}/api-keys/${keyId}`).subscribe({
+      next: () => this.loadKeys(this.selectedProjectId),
+    });
+  }
+
+  copySecretKey() {
+    const key = this.newSecretKey();
+    if (key) {
+      navigator.clipboard.writeText(key);
+      this.keyCopied.set(true);
+      setTimeout(() => this.keyCopied.set(false), 2000);
     }
   }
 
-  revokeKey(id: string) {
-    this.keys = this.keys.filter((item) => item.id !== id);
+  formatDate(dateStr: string): string {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleString();
+    } catch {
+      return dateStr;
+    }
   }
 }
