@@ -7,7 +7,8 @@ export default defineConfig({
     environment: 'node',
     testTimeout: 30_000,
     hookTimeout: 30_000,
-    include: ['tests/**/*.test.ts'],
+    passWithNoTests: true,
+    include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
   },
   resolve: {
     alias: {
@@ -15,3 +16,4 @@ export default defineConfig({
     },
   },
 });
+

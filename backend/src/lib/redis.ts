@@ -12,6 +12,9 @@ export function getRedis(): Redis {
       maxRetriesPerRequest: 2,
       lazyConnect: true,
     });
+    client.on("error", () => {
+      // Suppress unhandled error events when Redis is offline (e.g. build step or local dev)
+    });
   }
   return client;
 }
