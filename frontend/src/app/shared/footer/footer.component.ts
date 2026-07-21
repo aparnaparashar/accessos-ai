@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <footer class="foot">
-      <div class="container foot-inner">
+      <div class="foot-container foot-inner">
         <div class="foot-brand">
           <div class="brand">
             <img src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
@@ -30,18 +30,19 @@ import { RouterLink } from '@angular/router';
           </div>
         </div>
       </div>
-      <div class="container foot-bottom">
+      <div class="foot-container foot-bottom">
         <span>© 2026 AccessOS AI · Developer-First Accessibility API Platform</span>
       </div>
     </footer>
   `,
   styles: [`
     .foot { background: var(--bg-deep); border-top: 1px solid var(--line); padding-top: 64px; }
+    .foot-container { width: 100%; max-width: 100%; padding: 0 40px; margin: 0 auto; }
     .foot-inner { display: flex; justify-content: space-between; gap: 48px; flex-wrap: wrap; padding-bottom: 48px; }
     .foot-brand { max-width: 360px; }
-    .brand { display: flex; align-items: center; gap: 8px; }
-    .brand-logo { height: 28px; width: auto; object-fit: contain; }
-    .brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; }
+    .brand { display: flex; align-items: center; gap: 6px; }
+    .brand-logo { height: 38px; width: auto; object-fit: contain; }
+    .brand-name { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: #fff; }
     .gradient-text {
       background: var(--vibrant-gradient);
       -webkit-background-clip: text;
@@ -52,7 +53,7 @@ import { RouterLink } from '@angular/router';
     .foot-cols h4 { font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 16px; }
     .foot-cols a { display: block; color: var(--ink-soft); font-size: 14px; margin-bottom: 10px; transition: color var(--duration-fast) var(--ease); }
     .foot-cols a:hover { color: #ffffff; }
-    .foot-bottom { border-top: 1px solid var(--line); padding: 24px 0; font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono); }
+    .foot-bottom { border-top: 1px solid var(--line); padding: 24px 0; font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono); text-align: center; }
   `],
 })
 export class FooterComponent {}

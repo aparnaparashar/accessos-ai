@@ -394,7 +394,7 @@ import { MonolithCanvasComponent } from './monolith-canvas.component';
       position: relative;
       z-index: 2;
       width: 100%;
-      max-width: 1360px;
+      max-width: 1280px;
     }
 
     .hero-content {
@@ -430,6 +430,7 @@ import { MonolithCanvasComponent } from './monolith-canvas.component';
 
     .hero-title { font-size: clamp(38px, 4.5vw, 64px); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; }
     .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-start; }
+    .hero-actions.justify-center { justify-content: center; }
     .btn-lg { padding: 16px 32px; font-size: 15px; }
     .hero-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); }
 

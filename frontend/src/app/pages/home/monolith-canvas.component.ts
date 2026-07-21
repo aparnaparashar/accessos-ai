@@ -536,13 +536,13 @@ export class MonolithCanvasComponent implements AfterViewInit, OnDestroy {
     this.monolith.rotation.y = baseRotY + this.mouseX * 0.15;
     this.monolith.rotation.x = Math.sin(t * 0.3) * 0.05 + this.mouseY * 0.08;
 
-    // Dynamic responsive position: scales smoothly across desktop, laptop, and mobile screens
+    // Dynamic responsive position: push monolith to extreme left (~40px padding from left edge)
     const w = window.innerWidth;
     let baseOffsetX = 0;
     if (w > 1300) {
-      baseOffsetX = -1.25;
+      baseOffsetX = -5.2;
     } else if (w > 900) {
-      baseOffsetX = -0.85;
+      baseOffsetX = -2.2;
     } else {
       baseOffsetX = 0;
     }
@@ -551,9 +551,9 @@ export class MonolithCanvasComponent implements AfterViewInit, OnDestroy {
     this.monolith.position.x = baseOffsetX + Math.sin(t * 0.3) * 0.04;
 
     // Camera subtle parallax
-    this.camera.position.x = baseOffsetX * 0.4 + this.mouseX * 0.2;
+    this.camera.position.x = baseOffsetX * 0.35 + this.mouseX * 0.2;
     this.camera.position.y = 0.3 - this.mouseY * 0.15;
-    this.camera.lookAt(baseOffsetX * 0.8, 0, 0);
+    this.camera.lookAt(baseOffsetX * 0.7, 0, 0);
 
     // Update face textures (~15 FPS for performance)
     if (Math.floor(t * 15) !== Math.floor((t - 1 / 60) * 15)) {

@@ -10,7 +10,7 @@ import { LogoAnimationService } from '../../core/logo-animation.service';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <header class="nav">
-      <div class="container nav-inner">
+      <div class="nav-container nav-inner">
         <a routerLink="/" class="brand">
           <img #brandLogo src="assets/logo_accessos-ai.png" alt="AccessOS AI Logo" class="brand-logo" />
           <span class="brand-name">AccessOS <b class="gradient-text">AI</b></span>
@@ -80,10 +80,16 @@ import { LogoAnimationService } from '../../core/logo-animation.service';
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--line);
     }
-    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-container {
+      width: 100%;
+      max-width: 100%;
+      padding: 0 40px;
+      margin: 0 auto;
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 6px; text-decoration: none; }
     .brand-logo {
-      height: 28px;
+      height: 42px;
       width: auto;
       object-fit: contain;
       border-radius: var(--radius-sm);
@@ -97,7 +103,7 @@ import { LogoAnimationService } from '../../core/logo-animation.service';
       transform: scale(1.08) rotate(3deg);
       filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.6));
     }
-    .brand-name { font-family: var(--font-display); font-size: 24px; font-weight: 500; color: #fff; letter-spacing: -0.04em; }
+    .brand-name { font-family: var(--font-display); font-size: 28px; font-weight: 500; color: #fff; letter-spacing: -0.04em; }
     .gradient-text {
       background: var(--vibrant-gradient);
       -webkit-background-clip: text;
